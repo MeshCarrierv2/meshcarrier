@@ -25,6 +25,7 @@ app.use('/api/users',       require('./routes/users'));
 app.use('/api/dashboard',   require('./routes/dashboard'));
 app.use('/api/billing',     require('./routes/billing'));
 app.use('/api/esim',        require('./routes/esim'));
+app.use('/api/setup',       require('./routes/setup'));
 
 app.get('/api', (req, res) => res.json({ name:'MeshCarrier API', version:'2.2.0', status:'online', mode: IS_LIVE?'LIVE':'demo', db:'postgresql' }));
 
