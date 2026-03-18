@@ -1,0 +1,19 @@
+# DB
+backend/meshcarrier.db
+backend/meshcarrier.db-shm
+backend/meshcarrier.db-wal
+backend/LIVE_CREDENTIALS.txt
+backend/.env
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+*.pem
+*.key
+
+# Logs
+*.log

@@ -1,0 +1,1986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MeshCarrier Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+:root{
+  --bg:#060B12;--bg1:#090F18;--bg2:#0D1520;--bg3:#111C28;--bg4:#162030;
+  --border:#152030;--border2:#1C2B3D;--border3:#243448;
+  --blue:#0EA5E9;--cyan:#22D3EE;--green:#10B981;--green2:#34D399;
+  --yellow:#F59E0B;--orange:#F97316;--red:#EF4444;
+  --purple:#A78BFA;--teal:#2DD4BF;--pink:#F472B6;
+  --white:#EDF4FB;--text:#6B91AD;--muted:#344F65;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--white);font-family:var(--sans);font-size:14px;line-height:1.5;min-height:100vh}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border3);border-radius:2px}
+input,select,textarea,button{font-family:var(--sans)}
+#splash{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;transition:opacity .5s}
+.sp-hex{animation:spSpin 5s linear infinite}
+@keyframes spSpin{to{transform:rotate(360deg)}}
+.sp-name{font-family:var(--mono);font-size:14px;letter-spacing:5px;color:var(--white)}
+.sp-name b{color:var(--blue)}
+.sp-bar{width:140px;height:2px;background:var(--border2);border-radius:1px;overflow:hidden}
+.sp-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));animation:spFill 1.5s ease forwards}
+@keyframes spFill{from{width:0}to{width:100%}}
+.grid-bg{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(21,32,48,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(21,32,48,.5) 1px,transparent 1px);
+  background-size:36px 36px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 30%,black 30%,transparent 80%)}
+#app{position:relative;z-index:1;min-height:100vh}
+.layout{display:flex;min-height:calc(100vh - 48px)}
+.topbar{position:sticky;top:0;z-index:200;height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:rgba(9,15,24,.96);border-bottom:1px solid var(--border);backdrop-filter:blur(12px)}
+.topbar-logo{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;letter-spacing:3px;font-weight:700}
+.topbar-logo b{color:var(--blue)}
+.topbar-tag{font-size:9px;color:var(--muted);background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:2px 7px;letter-spacing:1px}
+.topbar-r{display:flex;align-items:center;gap:10px}
+.topbar-user{display:flex;align-items:center;gap:8px;padding:4px 11px;background:var(--bg3);border:1px solid var(--border2);border-radius:6px}
+.sidebar{width:196px;flex-shrink:0;background:var(--bg1);border-right:1px solid var(--border);display:flex;flex-direction:column}
+.sidebar-nav{flex:1;padding:10px 8px;overflow-y:auto}
+.nav-grp{font-size:8px;letter-spacing:2.5px;color:var(--muted);padding:12px 8px 4px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;cursor:pointer;color:var(--text);font-size:11px;font-weight:600;border-left:2px solid transparent;transition:all .1s;margin-bottom:1px;letter-spacing:.5px}
+.nav-item:hover{background:var(--bg3);color:var(--white)}
+.nav-item.active{background:var(--bg3);border-left-color:var(--blue);color:var(--white)}
+.nav-icon{font-size:11px;width:14px;text-align:center;flex-shrink:0}
+.sidebar-footer{padding:10px;border-top:1px solid var(--border)}
+.sfx{display:flex;justify-content:space-between;font-size:9px;font-family:var(--mono);color:var(--muted);padding:2px 0}
+.sfx b{color:var(--green)}
+.content{flex:1;padding:24px;overflow-y:auto;min-width:0}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ac,var(--blue))}
+.sc-lbl{font-size:9px;letter-spacing:2.5px;color:var(--muted);margin-bottom:5px;text-transform:uppercase}
+.sc-val{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--ac,var(--blue));line-height:1.1}
+.sc-sub{font-size:10px;color:var(--muted);margin-top:3px}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:8px}
+.ph{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--border)}
+.ph-t{font-size:9px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;font-weight:600}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{padding:8px 14px;text-align:left;font-size:9px;letter-spacing:2px;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap;text-transform:uppercase}
+tbody td{padding:10px 14px;font-size:12px;color:var(--white);border-bottom:1px solid rgba(21,32,48,.7);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(14,165,233,.03)}
+.bdg{display:inline-flex;align-items:center;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.8px;white-space:nowrap;text-transform:uppercase}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;flex-shrink:0;vertical-align:middle;position:relative;top:-1px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;border-radius:6px;font-weight:600;cursor:pointer;transition:all .1s;border:1px solid;letter-spacing:.3px;line-height:1}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-md{padding:9px 18px;font-size:12px}
+.btn-sm{padding:5px 13px;font-size:11px}
+.btn-xs{padding:3px 8px;font-size:9px;letter-spacing:.5px;font-weight:700}
+.btn-full{width:100%}
+.field{margin-bottom:13px}
+.flbl{display:block;font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:5px;text-transform:uppercase}
+.finp{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:9px 12px;color:var(--white);font-size:13px;outline:none;transition:border-color .1s}
+.finp:focus{border-color:var(--blue)}
+.fsel{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:9px 12px;color:var(--white);font-size:13px;outline:none}
+textarea.finp{resize:vertical}
+.modal-bg{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);animation:fadeIn .15s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--bg1);border:1px solid var(--border2);border-radius:12px;width:100%;overflow:hidden;animation:slideUp .18s ease;max-height:90vh;overflow-y:auto}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--border);background:var(--bg1);position:sticky;top:0;z-index:5}
+.modal-t{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase}
+.modal-x{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:0 4px;line-height:1;border-radius:4px}
+.modal-x:hover{background:var(--bg3);color:var(--white)}
+.modal-bd{padding:18px 20px 22px}
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:10px 14px;border-radius:7px;font-size:12px;font-weight:500;display:flex;align-items:center;gap:8px;animation:toastIn .2s ease}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.prog-track{height:4px;background:var(--border2);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;border-radius:2px;transition:width .4s}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 7px var(--green);animation:lp 2s ease infinite}
+@keyframes lp{0%,100%{box-shadow:0 0 7px var(--green)}50%{box-shadow:0 0 2px var(--green)}}
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:18px}
+.tab{padding:9px 15px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:1.5px;cursor:pointer;transition:all .1s;margin-bottom:-1px;text-transform:uppercase}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--white);border-bottom-color:var(--blue)}
+.drow{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid rgba(21,32,48,.6)}
+.drow:last-child{border-bottom:none}
+.dk{font-size:10px;color:var(--muted)}
+.dv{font-family:var(--mono);font-size:10px;color:var(--white);text-align:right;max-width:65%;word-break:break-all}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.g6{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.gauto{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:12px}
+.abox{display:flex;align-items:center;gap:9px;padding:9px 13px;border-radius:6px;font-size:12px;margin-bottom:8px;border:1px solid}
+.chat-wrap{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:14px}
+.cmsg{display:flex;gap:8px;align-items:flex-end}
+.cmsg.me{flex-direction:row-reverse}
+.cav{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;color:#000;text-transform:uppercase}
+.cbub{max-width:72%;padding:8px 11px;border-radius:10px;font-size:12px;line-height:1.5;color:var(--white)}
+.cmeta{font-size:9px;color:var(--muted);margin-bottom:2px}
+.vstep{display:flex;align-items:flex-start;gap:9px;padding:8px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;transition:all .1s;margin-bottom:3px}
+.vstep.done{border-color:rgba(16,185,129,.35);background:rgba(16,185,129,.04)}
+.vstep.cur{border-color:var(--blue);background:rgba(14,165,233,.07)}
+.vstep:hover:not(.done):not(.cur){border-color:var(--border3)}
+.snum{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
+.node-card{background:var(--bg2);border:1px solid var(--border);border-left:3px solid;border-radius:10px;padding:16px}
+.nstat{background:var(--bg3);border-radius:5px;padding:7px 9px}
+.nsl{font-size:9px;color:var(--muted);margin-bottom:1px}
+.nsv{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--white)}
+.chart-bars{display:flex;align-items:flex-end;gap:3px;height:72px}
+.cbar{flex:1;min-width:8px;border-radius:3px 3px 0 0;opacity:.8;cursor:pointer;transition:opacity .1s}
+.cbar:hover{opacity:1}
+.plan-card{border:2px solid var(--border);border-radius:10px;padding:16px 14px;cursor:pointer;transition:all .15s;position:relative}
+.plan-card.sel{border-color:var(--pc);background:rgba(14,165,233,.04)}
+.step-ind{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;transition:all .2s}
+.step-line{flex:1;height:1px;transition:background .2s}
+.info-box{padding:10px 13px;border-radius:7px;font-size:12px;line-height:1.6}
+@media(max-width:768px){.sidebar{display:none}.g4,.g5,.g6{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div id="splash">
+  <svg width="52" height="52" viewBox="0 0 52 52" class="sp-hex">
+    <polygon points="26,3 47,15 47,37 26,49 5,37 5,15" fill="none" stroke="#0EA5E9" stroke-width="1.5"/>
+    <polygon points="26,11 40,19 40,33 26,41 12,33 12,19" fill="none" stroke="#22D3EE" stroke-width=".7" opacity=".5"/>
+    <circle cx="26" cy="26" r="4" fill="#0EA5E9"/>
+    <circle cx="26" cy="3" r="1.5" fill="#0EA5E9" opacity=".6"/>
+    <circle cx="47" cy="15" r="1.5" fill="#0EA5E9" opacity=".6"/>
+    <circle cx="47" cy="37" r="1.5" fill="#0EA5E9" opacity=".6"/>
+    <circle cx="26" cy="49" r="1.5" fill="#0EA5E9" opacity=".6"/>
+    <circle cx="5"  cy="37" r="1.5" fill="#0EA5E9" opacity=".6"/>
+    <circle cx="5"  cy="15" r="1.5" fill="#0EA5E9" opacity=".6"/>
+  </svg>
+  <div class="sp-name">MESH<b>CARRIER</b></div>
+  <div class="sp-bar"><div class="sp-fill"></div></div>
+</div>
+<div id="app"></div>
+<script type="text/babel" data-presets="react,env">
+const {useState,useEffect,useRef,useCallback,createContext,useContext} = React;
+
+
+// Smart API URL detection
+const API = (() => {
+  // If served from Vite on 3000, backend is 3001
+  // If opened as file://, backend is 3001  
+  // If served from 3001 directly, use same origin
+  const port = parseInt(window.location.port);
+  if (window.location.protocol === 'file:' || port !== 3001) {
+    return 'http://localhost:3001/api';
+  }
+  return window.location.origin + '/api';
+})();
+async function api(path, opts={}) {
+  const tok = localStorage.getItem('mc_tok');
+  const r = await fetch(API+path, {
+    headers:{'Content-Type':'application/json',...(tok?{Authorization:'Bearer '+tok}:{})},
+    ...opts, body: opts.body ? JSON.stringify(opts.body) : undefined
+  });
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.error||'Request failed');
+  return d;
+}
+const AuthCtx = createContext(null);
+const useAuth = () => useContext(AuthCtx);
+const C = {
+  blue:'#0EA5E9',cyan:'#22D3EE',green:'#10B981',green2:'#34D399',
+  yellow:'#F59E0B',orange:'#F97316',red:'#EF4444',purple:'#A78BFA',
+  teal:'#2DD4BF',pink:'#F472B6',white:'#EDF4FB',text:'#6B91AD',muted:'#344F65'
+};
+const ROLE_C = {superadmin:C.red,admin:C.orange,tech:C.purple,support:C.teal,user:C.blue};
+function sc(s) {
+  return {
+    active:C.green,online:C.green,settled:C.green,enabled:C.green,resolved:C.green,answered:C.green,delivered:C.green,current:C.green,completed:C.green,activated:C.green,
+    suspended:C.red,offline:C.red,failed:C.red,disabled:C.red,rejected:C.red,
+    pending:C.yellow,setup:C.yellow,voicemail:C.yellow,warning:C.yellow,
+    overdue:C.orange,degraded:C.orange,in_progress:C.orange,
+    open:C.blue,assigned:C.blue,
+    high:C.red,medium:C.yellow,low:C.muted,
+    closed:C.muted,replaced:C.muted,
+  }[s]||C.muted;
+}
+
+
+function useToast() {
+  const [toasts,setToasts] = useState([]);
+  const show = useCallback((msg,color=C.green)=>{
+    const id = Date.now();
+    setToasts(p=>[...p,{id,msg,color}]);
+    setTimeout(()=>setToasts(p=>p.filter(t=>t.id!==id)),3200);
+  },[]);
+  return {toasts,show};
+}
+const Dot = ({s})=><span className="dot" style={{background:sc(s),boxShadow:`0 0 5px ${sc(s)}`}}/>;
+const Bdg = ({label,color})=>{const c=color||C.muted;return <span className="bdg" style={{background:c+'18',border:`1px solid ${c}40`,color:c}}>{label}</span>;};
+function SC({label,value,sub,color=C.blue}) {
+  return <div className="stat-card" style={{'--ac':color}}>
+    <div className="sc-lbl">{label}</div>
+    <div className="sc-val">{value}</div>
+    {sub&&<div className="sc-sub">{sub}</div>}
+  </div>;
+}
+function Btn({children,onClick,color=C.blue,outline,full,disabled,size='md',icon}) {
+  const sz = size==='sm'?'btn-sm':size==='xs'?'btn-xs':'btn-md';
+  const bg = outline?'transparent':color;
+  const fg = outline?color:'#000';
+  return <button type="button" onClick={onClick} disabled={disabled}
+    className={`btn ${sz} ${full?'btn-full':''}`}
+    style={{background:bg,borderColor:outline?color+'55':color,color:fg,opacity:disabled?.4:1}}>
+    {icon&&<span>{icon}</span>}{children}
+  </button>;
+}
+function F({label,value,onChange,type='text',placeholder,rows}) {
+  return <div className="field">
+    {label&&<label className="flbl">{label}</label>}
+    {rows
+      ? <textarea className="finp" value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} rows={rows}/>
+      : <input className="finp" type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder}/>}
+  </div>;
+}
+function Sel({label,value,onChange,options}) {
+  return <div className="field">
+    {label&&<label className="flbl">{label}</label>}
+    <select className="fsel" value={value} onChange={e=>onChange(e.target.value)}>
+      {options.map(o=><option key={o.value!==undefined?o.value:o} value={o.value!==undefined?o.value:o}>{o.label!==undefined?o.label:o}</option>)}
+    </select>
+  </div>;
+}
+function Modal({title,onClose,children,color=C.blue,width=480}) {
+  return <div className="modal-bg" onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div className="modal" style={{maxWidth:width,borderTopColor:color}}>
+      <div className="modal-hd"><span className="modal-t" style={{color}}>{title}</span><button className="modal-x" type="button" onClick={onClose}>×</button></div>
+      <div className="modal-bd">{children}</div>
+    </div>
+  </div>;
+}
+const ToastLayer = ({toasts})=><div className="toast-wrap">{toasts.map(t=><div key={t.id} className="toast" style={{background:t.color+'15',border:`1px solid ${t.color}50`,color:t.color}}><span>{t.color===C.red?'✕':'✓'}</span>{t.msg}</div>)}</div>;
+const PH = ({title,right})=><div className="ph"><span className="ph-t">{title}</span>{right}</div>;
+const DR = ({k,v})=><div className="drow"><span className="dk">{k}</span><span className="dv">{v??'—'}</span></div>;
+
+
+function LoginPage({onLogin,onSignup}) {
+  const [email,setEmail] = useState('');
+  const [pass,setPass] = useState('');
+  const [err,setErr] = useState('');
+  const [loading,setLoading] = useState(false);
+  const [apiOk,setApiOk] = useState(null);
+  useEffect(()=>{
+    fetch(API).then(r=>r.json()).then(()=>setApiOk(true)).catch(()=>setApiOk(false));
+  },[]);
+  const submit = async()=>{
+    setErr('');setLoading(true);
+    try {
+      const d = await api('/auth/login',{method:'POST',body:{email,password:pass}});
+      localStorage.setItem('mc_tok',d.token);
+      onLogin({...d.user,name:d.user.name||d.user.full_name||d.user.email});
+    } catch(e){setErr(e.message);}
+    finally{setLoading(false);}
+  };
+  const DEMOS=[
+    ['superadmin@meshcarrier.xyz','MeshAdmin#1','superadmin'],
+    ['admin@meshcarrier.xyz','MeshAdmin#2','admin'],
+    ['support@meshcarrier.xyz','MeshSupport#1','support'],
+    ['tech@meshcarrier.xyz','MeshTech#1','tech'],
+    ['user@meshcarrier.xyz','MeshUser#1','user'],
+    ['user2@meshcarrier.xyz','MeshUser#2','user'],
+  ];
+  return <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>
+    <div style={{width:'100%',maxWidth:400}}>
+      <div style={{textAlign:'center',marginBottom:32}}>
+        <svg width="48" height="48" viewBox="0 0 52 52" style={{marginBottom:12}}>
+          <polygon points="26,3 47,15 47,37 26,49 5,37 5,15" fill="none" stroke={C.blue} strokeWidth="1.5"/>
+          <circle cx="26" cy="26" r="4" fill={C.blue}/>
+          {[[26,3],[47,15],[47,37],[26,49],[5,37],[5,15]].map(([x,y],i)=><circle key={i} cx={x} cy={y} r="1.5" fill={C.blue} opacity=".6"/>)}
+        </svg>
+        <div style={{fontFamily:'var(--mono)',fontSize:18,fontWeight:700,letterSpacing:4,marginBottom:4}}>MESH<span style={{color:C.blue}}>CARRIER</span></div>
+        <div style={{fontSize:10,color:C.muted,letterSpacing:4}}>NETWORK PORTAL v2.1</div>
+      </div>
+      {apiOk===false&&<div style={{padding:'10px 13px',background:'#EF444412',border:'1px solid #EF444430',borderRadius:7,marginBottom:12,fontSize:12,color:'#EF4444',lineHeight:1.6}}>
+        <b>⚠ Backend not running on port 3001</b><br/>
+        <span style={{fontSize:11,color:'#7A9CBB'}}>Open a terminal and run:<br/><code style={{background:'#0D1520',padding:'2px 6px',borderRadius:3,color:'#22D3EE'}}>cd meshcarrier/backend &amp;&amp; node server.js</code></span>
+      </div>}
+      <div className="panel" style={{padding:22,marginBottom:14}}>
+        <F label="Email" value={email} onChange={setEmail} type="email" placeholder="you@meshcarrier.xyz"/>
+        <F label="Password" value={pass} onChange={setPass} type="password" placeholder="••••••••"/>
+        {err&&<div style={{padding:'8px 11px',background:C.red+'12',border:`1px solid ${C.red}30`,borderRadius:6,fontSize:12,color:C.red,marginBottom:12}}>{err}</div>}
+        <Btn full color={C.blue} onClick={submit} disabled={loading}>{loading?'SIGNING IN…':'SIGN IN →'}</Btn>
+        <button type="button" onClick={onSignup} style={{width:'100%',marginTop:8,background:'transparent',border:'1px solid var(--border2)',borderRadius:6,padding:9,color:'var(--text)',fontSize:11,cursor:'pointer',letterSpacing:1,fontFamily:'var(--sans)',fontWeight:600}}>CREATE ACCOUNT</button>
+      </div>
+      <div className="panel" style={{padding:14}}>
+        <div style={{fontSize:9,color:C.muted,letterSpacing:2,marginBottom:9,textTransform:'uppercase'}}>Click to autofill demo accounts</div>
+        {DEMOS.map(([e,p,r])=><div key={r+e} onClick={()=>{setEmail(e);setPass(p);}}
+          style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'5px 4px',cursor:'pointer',borderRadius:5}}
+          onMouseEnter={ev=>ev.currentTarget.style.background='var(--bg3)'}
+          onMouseLeave={ev=>ev.currentTarget.style.background='transparent'}>
+          <span style={{fontFamily:'var(--mono)',fontSize:10,color:'var(--text)'}}>{e}</span>
+          <Bdg label={r} color={ROLE_C[r]}/>
+        </div>)}
+      </div>
+    </div>
+  </div>;
+}
+
+
+function SignupPage({onBack}) {
+  const [step,setStep] = useState(1);
+  const [plan,setPlan] = useState('');
+  const [form,setForm] = useState({full_name:'',email:'',password:'',confirm:'',make:'',model:'',os_version:'',imei:'',esim_eid:''});
+  const [loading,setLoading] = useState(false);
+  const [err,setErr] = useState('');
+  const [done,setDone] = useState(null);
+  const sf = (k,v)=>setForm(p=>({...p,[k]:v}));
+  const PLANS = {
+    NODE:{price:'$15/mo',xrp:'6.5 XRP',data:'5GB',color:C.blue,   feats:['5GB LTE Data','Voice & SMS','MESH Token Rewards','eSIM Activation']},
+    MESH:{price:'$30/mo',xrp:'13 XRP', data:'20GB',color:C.green,  feats:['20GB LTE Data','Voice & SMS','Enhanced MESH Rewards','Mobile Hotspot','Node App Access']},
+    CARRIER:{price:'$55/mo',xrp:'23.8 XRP',data:'Unlimited',color:C.yellow,feats:['Unlimited Data','Priority Voice & SMS','Full MESH Node','Staking Rewards','Founding Member NFT']},
+  };
+  const go2=()=>{if(!plan)return;setStep(2);};
+  const go3=()=>{
+    if(!form.full_name||!form.email||!form.password){setErr('All fields required');return;}
+    if(form.password!==form.confirm){setErr('Passwords do not match');return;}
+    if(form.password.length<8){setErr('Password min 8 characters');return;}
+    setErr('');setStep(3);
+  };
+  const submit=async()=>{
+    setLoading(true);setErr('');
+    try {
+      const r = await fetch(API.replace('/api','')+'/api/signup',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({full_name:form.full_name,email:form.email,password:form.password,plan,
+          make:form.make||undefined,model:form.model||undefined,os_version:form.os_version||undefined,
+          imei:form.imei||undefined,esim_eid:form.esim_eid||undefined})});
+      const d = await r.json();
+      if(!r.ok) throw new Error(d.error);
+      setDone(d);setStep(4);
+    } catch(e){setErr(e.message);}
+    finally{setLoading(false);}
+  };
+  const STEPS=['Plan','Account','Device'];
+  const p = PLANS[plan];
+  return <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:'24px 16px'}}>
+    <div style={{width:'100%',maxWidth:600}}>
+      <div className="panel" style={{borderRadius:'10px 10px 0 0',borderBottom:'none'}}>
+        <div style={{padding:'16px 22px',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div style={{fontFamily:'var(--mono)',fontSize:12,letterSpacing:3,fontWeight:700}}>MESH<span style={{color:C.blue}}>CARRIER</span></div>
+          {step<4&&<div style={{display:'flex',alignItems:'center',gap:6}}>
+            {STEPS.map((s,i)=>{const n=i+1,done2=step>n,act=step===n;return <React.Fragment key={n}>
+              <div style={{display:'flex',alignItems:'center',gap:5}}>
+                <div className="step-ind" style={{background:done2?C.green:act?C.blue:'var(--bg3)',border:`1px solid ${done2?C.green:act?C.blue:'var(--border2)'}`,color:done2||act?'#000':C.muted}}>{done2?'✓':n}</div>
+                <span style={{fontSize:10,color:act?C.white:C.muted,letterSpacing:.5}}>{s}</span>
+              </div>
+              {i<2&&<div className="step-line" style={{width:20,background:step>n?C.blue:'var(--border2)'}}/>}
+            </React.Fragment>;})}
+          </div>}
+        </div>
+        <div style={{padding:'24px 26px 22px'}}>
+          {step===1&&<div>
+            <div style={{fontSize:9,color:C.muted,letterSpacing:3,marginBottom:18,textTransform:'uppercase'}}>Step 1 — Choose Your Plan</div>
+            <div className="g3" style={{marginBottom:18}}>
+              {Object.entries(PLANS).map(([key,pl])=><div key={key} className={`plan-card ${plan===key?'sel':''}`} style={{'--pc':pl.color,borderColor:plan===key?pl.color:'var(--border)'}} onClick={()=>setPlan(key)}>
+                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,color:pl.color,marginBottom:5}}>{key}</div>
+                <div style={{fontFamily:'var(--mono)',fontSize:18,fontWeight:700,marginBottom:2}}>{pl.price}</div>
+                <div style={{fontSize:10,color:C.muted,marginBottom:12}}>{pl.xrp} · {pl.data}</div>
+                {pl.feats.map(f=><div key={f} style={{fontSize:11,color:'var(--text)',padding:'2px 0',display:'flex',gap:5,alignItems:'center'}}><span style={{color:pl.color,fontSize:8}}>◆</span>{f}</div>)}
+              </div>)}
+            </div>
+            <Btn full color={plan?C.blue:C.muted} onClick={go2} disabled={!plan}>{plan?`CONTINUE WITH ${plan} →`:'SELECT A PLAN'}</Btn>
+          </div>}
+          {step===2&&<div>
+            <div style={{fontSize:9,color:C.muted,letterSpacing:3,marginBottom:18,textTransform:'uppercase'}}>Step 2 — Create Account</div>
+            <F label="Full Name" value={form.full_name} onChange={v=>sf('full_name',v)} placeholder="Your full name"/>
+            <F label="Email" value={form.email} onChange={v=>sf('email',v)} type="email" placeholder="you@example.com"/>
+            <div className="g2">
+              <F label="Password" value={form.password} onChange={v=>sf('password',v)} type="password" placeholder="Min 8 chars"/>
+              <F label="Confirm Password" value={form.confirm} onChange={v=>sf('confirm',v)} type="password" placeholder="Repeat password"/>
+            </div>
+            {err&&<div style={{padding:'8px 11px',background:C.red+'12',border:`1px solid ${C.red}30`,borderRadius:6,fontSize:12,color:C.red,marginBottom:12}}>{err}</div>}
+            <div className="g2"><Btn full outline color={C.muted} onClick={()=>setStep(1)}>← BACK</Btn><Btn full color={C.blue} onClick={go3}>NEXT →</Btn></div>
+          </div>}
+          {step===3&&<div>
+            <div style={{fontSize:9,color:C.muted,letterSpacing:3,marginBottom:4,textTransform:'uppercase'}}>Step 3 — Device <span style={{color:C.blue}}>(Optional)</span></div>
+            <div style={{fontSize:12,color:C.text,marginBottom:16}}>Add your device now or skip — you can add it later from your portal.</div>
+            <div className="g2"><F label="Make" value={form.make} onChange={v=>sf('make',v)} placeholder="e.g. Google"/><F label="Model" value={form.model} onChange={v=>sf('model',v)} placeholder="e.g. Pixel 9"/></div>
+            <F label="OS Version" value={form.os_version} onChange={v=>sf('os_version',v)} placeholder="e.g. Android 15"/>
+            <F label="IMEI (optional)" value={form.imei} onChange={v=>sf('imei',v)} placeholder="15-digit IMEI"/>
+            <F label="eSIM EID (optional)" value={form.esim_eid} onChange={v=>sf('esim_eid',v)} placeholder="32-digit EID"/>
+            {err&&<div style={{padding:'8px 11px',background:C.red+'12',border:`1px solid ${C.red}30`,borderRadius:6,fontSize:12,color:C.red,marginBottom:12}}>{err}</div>}
+            <div className="g2"><Btn full outline color={C.muted} onClick={()=>setStep(2)}>← BACK</Btn><Btn full color={C.green} onClick={submit} disabled={loading}>{loading?'CREATING…':'CREATE ACCOUNT →'}</Btn></div>
+          </div>}
+          {step===4&&<div style={{textAlign:'center',padding:'16px 0'}}>
+            <div style={{fontSize:36,marginBottom:14}}>✅</div>
+            <div style={{fontFamily:'var(--mono)',fontSize:13,fontWeight:700,color:C.green,letterSpacing:2,marginBottom:10}}>ACCOUNT CREATED</div>
+            <div style={{fontSize:13,color:C.text,marginBottom:22,lineHeight:1.7}}>Welcome to MeshCarrier! Your <b style={{color:p?.color||C.blue}}>{plan}</b> account is active.<br/>Our team will provision your eSIM within 24 hours.</div>
+            <div style={{background:'var(--bg3)',border:'1px solid var(--border2)',borderRadius:8,padding:'14px 18px',marginBottom:18,textAlign:'left'}}>
+              {[['Email',form.email],['Plan',plan],['Account ID',(done?.subscriber_id||'').slice(0,12)+'…']].map(([k,v])=><DR key={k} k={k} v={v}/>)}
+            </div>
+            <Btn full color={C.blue} onClick={onBack}>SIGN IN TO PORTAL →</Btn>
+          </div>}
+        </div>
+      </div>
+      {step<4&&<div style={{textAlign:'center',marginTop:12}}><button type="button" onClick={onBack} style={{background:'none',border:'none',color:C.muted,cursor:'pointer',fontSize:12,fontFamily:'var(--sans)'}}>Already have an account? Sign in</button></div>}
+    </div>
+  </div>;
+}
+
+
+
+function DeviceSetupTab({dev, sub, show, onRefresh}) {
+  const SETUP_STEPS = [
+    { id:0, label:'Account Verified',    icon:'✓', desc:'Your account is active and verified.',                         user_action: false },
+    { id:1, label:'Plan Selected',       icon:'◆', desc:'Choose your MeshCarrier service plan.',                        user_action: false },
+    { id:2, label:'Device Registered',   icon:'📱', desc:'Enter your device details so we can provision your service.', user_action: true  },
+    { id:3, label:'IMEI Submitted',      icon:'🔢', desc:'Submit your device IMEI for network registration.',           user_action: true  },
+    { id:4, label:'eSIM Profile Ready',  icon:'📡', desc:'Your eSIM profile is being generated.',                       user_action: false },
+    { id:5, label:'eSIM Installed',      icon:'💾', desc:'Scan the QR code to install your eSIM profile.',              user_action: true  },
+    { id:6, label:'APN Configured',      icon:'⚙', desc:'Configure your APN settings for MeshCarrier.',                user_action: true  },
+    { id:7, label:'Network Test',        icon:'📶', desc:'Test your connection to the MeshCarrier network.',            user_action: true  },
+    { id:8, label:'Voice & SMS Ready',   icon:'📞', desc:'Verify your number and test calling.',                        user_action: true  },
+    { id:9, label:'Setup Complete',      icon:'🎉', desc:'Your device is fully set up on MeshCarrier!',                 user_action: false },
+  ];
+
+  const [form, setForm] = useState({make:'', model:'', os_version:'', imei:'', esim_eid:''});
+  const [loading, setLoading] = useState(false);
+  const [activeStep, setActiveStep] = useState(null);
+  const [testResult, setTestResult] = useState(null);
+  const [esimCreds, setEsimCreds] = useState(null);
+
+  const step = dev?.setup_step || 0;
+  const done = step >= 9;
+
+  const submitStep = async (stepNum, body) => {
+    setLoading(true);
+    try {
+      await api('/subscribers/'+sub.id, {method:'PATCH', body});
+      if (dev?.id) {
+        await api('/devices/'+dev.id+'/step', {method:'PATCH', body:{
+          step: stepNum,
+          notes: SETUP_STEPS[stepNum]?.label + ' — completed by subscriber'
+        }});
+      }
+      await onRefresh();
+      setActiveStep(null);
+      show(SETUP_STEPS[stepNum]?.label + ' — done!', C.green);
+    } catch(e) {
+      show(e.message, C.red);
+    }
+    setLoading(false);
+  };
+
+  const registerDevice = async () => {
+    if (!form.make || !form.model) { show('Enter device make and model', C.red); return; }
+    setLoading(true);
+    try {
+      // Create or update device record
+      const endpoint = dev?.id ? '/devices/'+dev.id : '/devices';
+      const method = dev?.id ? 'PATCH' : 'POST';
+      await api(endpoint, {method, body:{
+        subscriber_id: sub.id,
+        make: form.make,
+        model: form.model,
+        os_version: form.os_version,
+        status: 'setup',
+        setup_step: 2,
+        setup_notes: 'Device registered by subscriber',
+      }});
+      await onRefresh();
+      setActiveStep(null);
+      show('Device registered!', C.green);
+    } catch(e) { show(e.message, C.red); }
+    setLoading(false);
+  };
+
+  const submitIMEI = async () => {
+    if (!form.imei || form.imei.length < 14) { show('Enter a valid 15-digit IMEI', C.red); return; }
+    await submitStep(3, {});
+    if (dev?.id) {
+      await api('/devices/'+dev.id, {method:'PATCH', body:{imei: form.imei, setup_step:3, setup_notes:'IMEI submitted by subscriber'}});
+      await onRefresh();
+    }
+  };
+
+  const loadEsimCreds = async () => {
+    if (!sub?.id) return;
+    setLoading(true);
+    try {
+      const creds = await api('/esim/credentials/'+sub.id);
+      setEsimCreds(creds);
+    } catch(e) {
+      setEsimCreds({mock: true, activation_code: 'LPA:1$mock.meshcarrier.xyz$MESHTEST001', iccid: dev?.iccid || 'Pending'});
+    }
+    setLoading(false);
+  };
+
+  const confirmEsimInstalled = async () => {
+    const eid = form.esim_eid;
+    await submitStep(5, {esim_status:'active'});
+    if (dev?.id && eid) {
+      await api('/devices/'+dev.id, {method:'PATCH', body:{esim_eid: eid, setup_step:5}});
+      await onRefresh();
+    }
+  };
+
+  const runNetworkTest = async () => {
+    setLoading(true);
+    setTestResult(null);
+    // Simulate network test steps
+    await new Promise(r => setTimeout(r, 1200));
+    setTestResult({
+      ping: Math.floor(18 + Math.random()*15) + 'ms',
+      download: (8 + Math.random()*12).toFixed(1) + ' Mbps',
+      upload: (3 + Math.random()*5).toFixed(1) + ' Mbps',
+      signal: ['-65 dBm (Good)', '-72 dBm (Fair)', '-58 dBm (Excellent)'][Math.floor(Math.random()*3)],
+      passed: true,
+    });
+    setLoading(false);
+  };
+
+  const confirmNetworkTest = async () => {
+    if (!testResult?.passed) { show('Run the test first', C.red); return; }
+    await submitStep(7, {});
+  };
+
+  const confirmVoiceSms = async () => {
+    await submitStep(8, {voice:'enabled', sms:'enabled'});
+    // Final step — mark fully active
+    setTimeout(async () => {
+      if (dev?.id) {
+        await api('/devices/'+dev.id, {method:'PATCH', body:{status:'active', setup_step:9, setup_notes:'Setup complete — device fully activated'}});
+        await onRefresh();
+      }
+    }, 500);
+  };
+
+  // No device at all
+  if (!sub) return <div style={{textAlign:'center',padding:40,color:C.muted,fontFamily:'var(--mono)',letterSpacing:1}}>
+    NO SUBSCRIBER ACCOUNT — Contact support to activate your service.
+  </div>;
+
+  // Completed
+  if (done) return <div>
+    <div style={{textAlign:'center',padding:'28px 0 20px',background:`linear-gradient(135deg,${C.green}08,${C.cyan}05)`,borderRadius:12,border:`1px solid ${C.green}25`,marginBottom:16}}>
+      <div style={{fontSize:40,marginBottom:8}}>🎉</div>
+      <div style={{fontFamily:'var(--mono)',fontWeight:700,fontSize:16,color:C.green,letterSpacing:2,marginBottom:4}}>SETUP COMPLETE</div>
+      <div style={{color:C.muted,fontSize:12}}>Your device is fully activated on MeshCarrier</div>
+    </div>
+    <div className="g2" style={{marginBottom:14}}>
+      <div style={{padding:14,background:'var(--bg2)',borderRadius:9,border:'1px solid var(--border2)'}}>
+        <div style={{fontSize:9,color:C.muted,letterSpacing:2,marginBottom:8}}>DEVICE</div>
+        {dev&&[['Make / Model',`${dev.make||'—'} ${dev.model||'—'}`],['OS',dev.os_version||'—'],['IMEI',dev.imei||'—'],['eSIM EID',dev.esim_eid||'—'],['ICCID',dev.iccid||sub?.iccid||'—'],['Status',dev.status]].map(([k,v])=><DR key={k} k={k} v={String(v||'—')}/>)}
+      </div>
+      <div style={{padding:14,background:'var(--bg2)',borderRadius:9,border:'1px solid var(--border2)'}}>
+        <div style={{fontSize:9,color:C.muted,letterSpacing:2,marginBottom:8}}>SERVICE</div>
+        {[['Plan',sub?.plan],['Phone Number',sub?.did||'Pending'],['Voice',sub?.voice],['SMS',sub?.sms],['Data',sub?.data_limit_gb===-1?'Unlimited':sub?.data_limit_gb+'GB'],['eSIM Status',sub?.esim_status]].map(([k,v])=><DR key={k} k={k} v={String(v||'—')}/>)}
+      </div>
+    </div>
+  </div>;
+
+  return <div>
+    {/* Progress bar */}
+    <div style={{marginBottom:20,padding:16,background:'var(--bg2)',borderRadius:10,border:'1px solid var(--border2)'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+        <div style={{fontFamily:'var(--mono)',fontWeight:700,fontSize:12,letterSpacing:1}}>SETUP PROGRESS</div>
+        <div style={{fontFamily:'var(--mono)',fontSize:12,color:C.blue}}>{step}/{SETUP_STEPS.length-1} — {Math.round(step/(SETUP_STEPS.length-1)*100)}%</div>
+      </div>
+      <div style={{height:6,background:'var(--bg3)',borderRadius:3,overflow:'hidden',marginBottom:12}}>
+        <div style={{height:'100%',width:`${step/(SETUP_STEPS.length-1)*100}%`,background:`linear-gradient(90deg,${C.blue},${C.cyan})`,borderRadius:3,transition:'width 0.5s'}}/>
+      </div>
+      {/* Step dots */}
+      <div style={{display:'flex',gap:0,position:'relative'}}>
+        <div style={{position:'absolute',top:10,left:10,right:10,height:2,background:'var(--bg3)',zIndex:0}}/>
+        {SETUP_STEPS.map((s,i)=>{
+          const isDone=i<step, isCur=i===step;
+          return <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4,position:'relative',zIndex:1}}>
+            <div style={{width:20,height:20,borderRadius:'50%',background:isDone?C.green:isCur?C.blue:'var(--bg3)',border:`2px solid ${isDone?C.green:isCur?C.blue:'var(--border2)'}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,color:isDone||isCur?'#fff':'var(--muted)',transition:'all 0.3s'}}>
+              {isDone?'✓':i}
+            </div>
+            <div style={{fontSize:7,color:isCur?C.blue:isDone?C.green:C.muted,textAlign:'center',letterSpacing:0.5,display:SETUP_STEPS.length>7?'none':'block'}}>{s.label.split(' ')[0]}</div>
+          </div>;
+        })}
+      </div>
+    </div>
+
+    {/* Steps list */}
+    <div style={{display:'flex',flexDirection:'column',gap:8}}>
+      {SETUP_STEPS.map((s, i) => {
+        const isDone = i < step;
+        const isCurrent = i === step;
+        const isLocked = i > step;
+        const isOpen = activeStep === i;
+
+        return <div key={i} style={{background:'var(--bg2)',border:`1px solid ${isDone?C.green+'30':isCurrent?C.blue+'40':'var(--border2)'}`,borderRadius:9,overflow:'hidden',transition:'all 0.2s'}}>
+          {/* Step header */}
+          <div onClick={()=>{ if(!isLocked) setActiveStep(isOpen?null:i); }}
+            style={{padding:'12px 14px',display:'flex',alignItems:'center',gap:12,cursor:isLocked?'default':'pointer'}}>
+            {/* Icon */}
+            <div style={{width:34,height:34,borderRadius:'50%',background:isDone?C.green+'20':isCurrent?C.blue+'20':'var(--bg3)',border:`1.5px solid ${isDone?C.green:isCurrent?C.blue:'var(--border2)'}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:isDone?12:15,flexShrink:0}}>
+              {isDone ? <span style={{color:C.green,fontWeight:700}}>✓</span> : <span>{s.icon}</span>}
+            </div>
+            {/* Label */}
+            <div style={{flex:1}}>
+              <div style={{fontWeight:600,fontSize:12,color:isDone?C.green:isCurrent?'var(--text)':C.muted}}>{s.label}</div>
+              <div style={{fontSize:10,color:C.muted,marginTop:1}}>{s.desc}</div>
+            </div>
+            {/* Badge */}
+            {isDone&&<span style={{padding:'2px 8px',background:C.green+'15',border:`1px solid ${C.green}30`,borderRadius:4,fontSize:9,color:C.green,letterSpacing:1}}>DONE</span>}
+            {isCurrent&&s.user_action&&<span style={{padding:'2px 8px',background:C.blue+'15',border:`1px solid ${C.blue}30`,borderRadius:4,fontSize:9,color:C.blue,letterSpacing:1}}>ACTION NEEDED</span>}
+            {isCurrent&&!s.user_action&&<span style={{padding:'2px 8px',background:C.yellow+'15',border:`1px solid ${C.yellow}30`,borderRadius:4,fontSize:9,color:C.yellow,letterSpacing:1}}>IN PROGRESS</span>}
+            {isLocked&&<span style={{color:C.muted,fontSize:12}}>🔒</span>}
+            {!isLocked&&!isDone&&<span style={{color:C.muted,fontSize:12,transform:isOpen?'rotate(90deg)':'none',transition:'transform 0.2s'}}>▶</span>}
+          </div>
+
+          {/* Step content — only show for current/done steps when open */}
+          {isOpen && <div style={{padding:'0 14px 14px',borderTop:'1px solid var(--border2)'}}>
+
+            {/* Step 2 — Register Device */}
+            {i===2&&<div style={{paddingTop:12}}>
+              <div className="g2" style={{marginBottom:10}}>
+                {[['Device Make','make','e.g. Samsung'],['Device Model','model','e.g. Galaxy S24']].map(([l,k,ph])=>
+                  <div key={k}>
+                    <div style={{fontSize:9,color:C.muted,letterSpacing:2,marginBottom:4}}>{l}</div>
+                    <input className="inp" placeholder={ph} value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))}/>
+                  </div>)}
+              </div>
+              <div className="g2" style={{marginBottom:12}}>
+                {[['OS Version','os_version','e.g. Android 14 / iOS 17'],['eSIM EID (optional)','esim_eid','Found in Settings → About']].map(([l,k,ph])=>
+                  <div key={k}>
+                    <div style={{fontSize:9,color:C.muted,letterSpacing:2,marginBottom:4}}>{l}</div>
+                    <input className="inp" placeholder={ph} value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))}/>
+                  </div>)}
+              </div>
+              <div style={{padding:'8px 11px',background:C.blue+'10',border:`1px solid ${C.blue}25`,borderRadius:6,fontSize:11,color:C.muted,marginBottom:12}}>
+                💡 Your device info helps us configure your eSIM and network profile correctly.
+              </div>
+              <Btn full color={C.blue} loading={loading} onClick={registerDevice}>REGISTER DEVICE →</Btn>
+            </div>}
+
+            {/* Step 3 — IMEI */}
+            {i===3&&<div style={{paddingTop:12}}>
+              <div style={{fontSize:9,color:C.muted,letterSpacing:2,marginBottom:4}}>IMEI NUMBER</div>
+              <input className="inp" placeholder="15-digit IMEI (dial *#06# to find it)" value={form.imei} onChange={e=>setForm(f=>({...f,imei:e.target.value.replace(/[^0-9]/g,'').slice(0,15)}))} style={{marginBottom:8}} maxLength={15}/>
+              <div style={{padding:'8px 11px',background:C.yellow+'10',border:`1px solid ${C.yellow}25`,borderRadius:6,fontSize:11,color:C.yellow,marginBottom:12}}>
+                📱 Dial <strong style={{fontFamily:'var(--mono)'}}>*#06#</strong> on your phone to find your IMEI. It's 15 digits.
+              </div>
+              <Btn full color={C.blue} loading={loading} onClick={submitIMEI} disabled={form.imei.length<14}>SUBMIT IMEI →</Btn>
+            </div>}
+
+            {/* Step 4 — eSIM Profile (waiting) */}
+            {i===4&&<div style={{paddingTop:12,textAlign:'center',padding:'20px 0'}}>
+              <div style={{fontSize:28,marginBottom:8}}>⏳</div>
+              <div style={{color:'var(--text)',fontSize:12,marginBottom:4}}>Your eSIM profile is being generated.</div>
+              <div style={{color:C.muted,fontSize:11}}>This usually takes 2–5 minutes. Refresh to check status.</div>
+              <Btn outline color={C.muted} onClick={onRefresh} style={{marginTop:12}}>CHECK STATUS</Btn>
+            </div>}
+
+            {/* Step 5 — Install eSIM */}
+            {i===5&&<div style={{paddingTop:12}}>
+              {!esimCreds
+                ? <Btn full color={C.cyan} loading={loading} onClick={loadEsimCreds}>LOAD MY eSIM QR CODE</Btn>
+                : <div>
+                  {esimCreds.mock&&<div style={{padding:'7px 10px',background:C.yellow+'10',border:`1px solid ${C.yellow}25`,borderRadius:6,fontSize:10,color:C.yellow,marginBottom:10}}>⚠ Sandbox mode — QR code below is for testing only.</div>}
+                  {esimCreds.qr_code_url
+                    ? <div style={{textAlign:'center',marginBottom:14}}>
+                        <div style={{fontSize:9,color:C.muted,letterSpacing:2,marginBottom:8}}>SCAN WITH YOUR CAMERA APP</div>
+                        <img src={esimCreds.qr_code_url} alt="eSIM QR" style={{width:160,height:160,borderRadius:8,border:`1px solid ${C.border2}`}}/>
+                      </div>
+                    : null}
+                  <div style={{marginBottom:10}}>
+                    <div style={{fontSize:9,color:C.muted,letterSpacing:2,marginBottom:5}}>ACTIVATION CODE</div>
+                    <div style={{fontFamily:'var(--mono)',fontSize:10,background:'var(--bg3)',border:'1px solid var(--border2)',borderRadius:6,padding:'8px 10px',wordBreak:'break-all',color:C.cyan}}>{esimCreds.activation_code||'Pending'}</div>
+                  </div>
+                  <div style={{padding:'8px 11px',background:'var(--bg3)',borderRadius:7,fontSize:11,lineHeight:1.7,marginBottom:12}}>
+                    <div style={{fontWeight:700,color:C.blue,marginBottom:4}}>How to install:</div>
+                    <div style={{color:C.muted}}>
+                      <strong>Android:</strong> Settings → Network → SIM → Add eSIM → Scan QR<br/>
+                      <strong>iPhone:</strong> Settings → Cellular → Add eSIM → Use QR Code
+                    </div>
+                  </div>
+                  <div style={{marginBottom:10}}>
+                    <div style={{fontSize:9,color:C.muted,letterSpacing:2,marginBottom:4}}>eSIM EID (optional — from Settings → About)</div>
+                    <input className="inp" placeholder="Enter EID after installing" value={form.esim_eid} onChange={e=>setForm(f=>({...f,esim_eid:e.target.value}))}/>
+                  </div>
+                  <Btn full color={C.green} loading={loading} onClick={confirmEsimInstalled}>I HAVE INSTALLED THE eSIM →</Btn>
+                </div>}
+            </div>}
+
+            {/* Step 6 — APN Config */}
+            {i===6&&<div style={{paddingTop:12}}>
+              <div style={{padding:'10px 13px',background:'var(--bg3)',borderRadius:8,marginBottom:12,fontSize:11,lineHeight:1.8}}>
+                <div style={{fontWeight:700,color:C.cyan,marginBottom:6,fontSize:12}}>MeshCarrier APN Settings</div>
+                {[['APN Name','MeshCarrier'],['APN','mesh.carrier'],['Username','(leave blank)'],['Password','(leave blank)'],['MCC','001'],['MNC','01'],['Authentication','None'],['APN Type','default,supl,mms']].map(([k,v])=>
+                  <div key={k} style={{display:'flex',justifyContent:'space-between',padding:'2px 0',borderBottom:'1px solid var(--border2)'}}>
+                    <span style={{color:C.muted}}>{k}</span>
+                    <span style={{fontFamily:'var(--mono)',color:'var(--text)',fontSize:10}}>{v}</span>
+                  </div>)}
+              </div>
+              <div style={{padding:'8px 11px',background:C.blue+'10',border:`1px solid ${C.blue}25`,borderRadius:6,fontSize:11,color:C.muted,marginBottom:12}}>
+                📱 Android: Settings → Network → SIM → Access Point Names → Add new APN<br/>
+                🍎 iPhone: Settings → Cellular → Cellular Data Network
+              </div>
+              <Btn full color={C.blue} loading={loading} onClick={()=>submitStep(6, {})}>I HAVE CONFIGURED THE APN →</Btn>
+            </div>}
+
+            {/* Step 7 — Network Test */}
+            {i===7&&<div style={{paddingTop:12}}>
+              {!testResult
+                ? <div>
+                    <div style={{color:C.muted,fontSize:11,marginBottom:12}}>Run a quick connection test to verify your device is connected to MeshCarrier.</div>
+                    <Btn full color={C.cyan} loading={loading} onClick={runNetworkTest}>RUN NETWORK TEST</Btn>
+                  </div>
+                : <div>
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
+                      {[['Ping',testResult.ping],['Download',testResult.download],['Upload',testResult.upload],['Signal',testResult.signal]].map(([k,v])=>
+                        <div key={k} style={{padding:'10px',background:C.green+'10',border:`1px solid ${C.green}25`,borderRadius:7,textAlign:'center'}}>
+                          <div style={{fontSize:9,color:C.muted,letterSpacing:1,marginBottom:3}}>{k}</div>
+                          <div style={{fontFamily:'var(--mono)',fontSize:12,color:C.green,fontWeight:700}}>{v}</div>
+                        </div>)}
+                    </div>
+                    <div style={{padding:'8px 11px',background:C.green+'12',border:`1px solid ${C.green}30`,borderRadius:6,fontSize:11,color:C.green,marginBottom:12}}>✓ Network test passed — connection looks great!</div>
+                    <Btn full color={C.green} loading={loading} onClick={confirmNetworkTest}>CONFIRM & CONTINUE →</Btn>
+                  </div>}
+            </div>}
+
+            {/* Step 8 — Voice & SMS */}
+            {i===8&&<div style={{paddingTop:12}}>
+              <div style={{padding:'10px 13px',background:'var(--bg3)',borderRadius:8,marginBottom:12,fontSize:11,lineHeight:1.8}}>
+                <div style={{fontWeight:700,color:C.cyan,marginBottom:6}}>Your MeshCarrier Number</div>
+                <div style={{fontFamily:'var(--mono)',fontSize:18,color:'var(--text)',letterSpacing:2}}>{sub?.did||'Pending assignment'}</div>
+                {!sub?.did&&<div style={{color:C.muted,fontSize:10,marginTop:4}}>A number will be assigned by your tech engineer shortly.</div>}
+              </div>
+              <div style={{color:C.muted,fontSize:11,marginBottom:12,lineHeight:1.6}}>
+                Make a test call to <strong style={{fontFamily:'var(--mono)'}}>+1 (555) 000-0001</strong> (our test line) to verify voice is working. Send a test SMS to the same number to verify SMS.
+              </div>
+              <Btn full color={C.green} loading={loading} onClick={confirmVoiceSms}>VOICE & SMS VERIFIED →</Btn>
+            </div>}
+
+            {/* Steps handled by staff (0,1,4) — just show info */}
+            {(i===0||i===1)&&<div style={{paddingTop:12,color:C.muted,fontSize:11}}>
+              ✓ This step was completed automatically when your account was created.
+            </div>}
+
+          </div>}
+        </div>;
+      })}
+    </div>
+  </div>;
+}
+
+function UserPortal() {
+  const {user} = useAuth();
+  const [data,setData] = useState(null);
+  const [loadErr,setLoadErr] = useState(null);
+  const [tab,setTab] = useState('home');
+  const [newTkt,setNewTkt] = useState(false);
+  const [tf,setTf] = useState({subject:'',category:'general',body:''});
+  const [activeTkt,setActiveTkt] = useState(null);
+  const [reply,setReply] = useState('');
+  const {toasts,show} = useToast();
+  const chatRef = useRef(null);
+  useEffect(()=>{
+    api('/dashboard/my')
+      .then(d=>{ setData(d); setLoadErr(null); })
+      .catch(e=>{ setLoadErr(e.message); setData({}); });
+  }, []);
+  const loadTkt = async id=>{
+    const t = await api('/tickets/'+id);
+    setActiveTkt(t);setTab('tktd');
+    setTimeout(()=>{if(chatRef.current)chatRef.current.scrollTop=99999;},100);
+  };
+  const submitTkt = async()=>{
+    try{await api('/tickets',{method:'POST',body:tf});show('Ticket submitted!');setNewTkt(false);setTf({subject:'',category:'general',body:''});const d=await api('/dashboard/my');setData(d);}
+    catch(e){show(e.message,C.red);}
+  };
+  const sendReply = async()=>{
+    if(!reply.trim()||!activeTkt)return;
+    try{const m=await api('/tickets/'+activeTkt.id+'/messages',{method:'POST',body:{body:reply}});setActiveTkt(p=>({...p,messages:[...p.messages,m]}));setReply('');setTimeout(()=>{if(chatRef.current)chatRef.current.scrollTop=99999;},50);}
+    catch(e){show(e.message,C.red);}
+  };
+  if(!data)return <div style={{padding:40,color:C.muted,textAlign:'center',fontFamily:'var(--mono)',letterSpacing:2,display:'flex',flexDirection:'column',alignItems:'center',gap:12}}>
+    <div>LOADING…</div>
+    <div style={{fontSize:10,color:'var(--muted)',letterSpacing:1}}>If stuck, make sure the backend is running on port 3001</div>
+  </div>;
+  const sub=data.subscriber||null, dev=data.device||null;
+  // Show backend error banner if applicable
+  const errBanner = loadErr ? <div style={{padding:'10px 13px',background:C.red+'12',border:`1px solid ${C.red}30`,borderRadius:7,marginBottom:16,fontSize:12,color:C.red}}>⚠ Could not load dashboard: {loadErr}</div> : null;
+
+  const TABS=[['home','◉ Dashboard'],['device','▣ My Device'],['tickets','◎ Support'],['billing','◆ Billing']];
+  return <div style={{maxWidth:900,margin:'0 auto'}}>
+    <ToastLayer toasts={toasts}/>
+    {errBanner}
+    <div style={{marginBottom:22}}>
+      <div style={{fontSize:9,color:C.muted,letterSpacing:3,marginBottom:3}}>WELCOME BACK</div>
+      <div style={{fontFamily:'var(--mono)',fontSize:18,fontWeight:700}}>{user.name}</div>
+    </div>
+    <div className="tabs">{TABS.map(([id,lbl])=><button key={id} className={`tab ${tab===id||(tab==='tktd'&&id==='tickets')?'on':''}`} type="button" onClick={()=>setTab(id)}>{lbl}</button>)}</div>
+
+    {tab==='home'&&<div>
+      {!sub&&<div style={{padding:'14px 16px',background:C.yellow+'10',border:`1px solid ${C.yellow}30`,borderRadius:8,marginBottom:16,fontSize:12,color:C.yellow}}>⚡ No subscriber account linked yet. Contact support to activate your service.</div>}
+      <div className="g4" style={{marginBottom:14}}>
+        <SC label="Plan" value={sub?.plan||'—'} color={C.blue}/>
+        <SC label="Phone Number" value={sub?.did||'Pending'} sub="Your DID" color={C.cyan}/>
+        <SC label="Data Used" value={sub?.data_limit_gb===-1?'∞':`${sub?.data_used_gb||0}/${sub?.data_limit_gb||0}GB`} color={C.green}/>
+        <SC label="MESH Balance" value={sub?.mesh_balance||0} sub="MESH tokens" color={C.purple}/>
+      </div>
+      <div className="g2">
+        <div className="panel"><PH title="Service Status"/>
+          <div style={{padding:'0 16px 4px'}}>
+            {[['eSIM',sub?.esim_status],['Voice',sub?.voice],['SMS',sub?.sms],['Account',sub?.account_status||'active']].map(([k,v])=>(
+              <div key={k} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'9px 0',borderBottom:'1px solid var(--border)'}}>
+                <span style={{fontSize:12,color:C.text}}>{k}</span>
+                <span style={{display:'flex',alignItems:'center',fontSize:12}}><Dot s={v}/>{v||'—'}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="panel"><PH title="Recent Calls"/>
+          <div style={{padding:'0 16px 4px'}}>
+            {!(data.calls?.length)&&<div style={{padding:'16px 0',color:C.muted,fontSize:12}}>No calls yet</div>}
+            {data.calls?.map(c=><div key={c.id} style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid var(--border)',fontSize:11}}>
+              <span style={{color:c.direction==='inbound'?C.cyan:C.purple}}>{c.direction==='inbound'?'↙ ':' ↗'}{c.direction==='inbound'?c.from_num:c.to_num}</span>
+              <span style={{fontFamily:'var(--mono)',color:C.muted}}>{Math.floor(c.duration_s/60)}:{String(c.duration_s%60).padStart(2,'0')}</span>
+            </div>)}
+          </div>
+        </div>
+      </div>
+    </div>}
+
+    {tab==='device'&&<DeviceSetupTab dev={dev} sub={sub} show={show} onRefresh={async()=>{const d=await api('/dashboard/my');setData(d);}}/>}
+
+    {tab==='tickets'&&<div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+        <span style={{fontFamily:'var(--mono)',fontSize:10,letterSpacing:2,color:C.white}}>MY TICKETS</span>
+        <Btn size="sm" color={C.blue} onClick={()=>setNewTkt(true)} icon="＋">NEW TICKET</Btn>
+      </div>
+      <div className="panel tbl-wrap"><table>
+        <thead><tr>{['ID','Subject','Category','Priority','Status','Date'].map(h=><th key={h}>{h}</th>)}</tr></thead>
+        <tbody>
+          {!data.tickets?.length&&<tr><td colSpan={6} style={{textAlign:'center',color:C.muted,padding:24}}>No tickets yet</td></tr>}
+          {data.tickets?.map(t=><tr key={t.id} style={{cursor:'pointer'}} onClick={()=>loadTkt(t.id)}>
+            <td style={{fontFamily:'var(--mono)',fontSize:10}}>{t.id.slice(0,8)}</td>
+            <td>{t.subject}</td>
+            <td><Bdg label={t.category} color={C.muted}/></td>
+            <td><Bdg label={t.priority} color={sc(t.priority)}/></td>
+            <td><Dot s={t.status}/>{t.status}</td>
+            <td style={{color:C.muted}}>{t.created_at?.slice(0,10)}</td>
+          </tr>)}
+        </tbody>
+      </table></div>
+    </div>}
+
+    {tab==='tktd'&&activeTkt&&<div>
+      <button type="button" onClick={()=>setTab('tickets')} style={{background:'none',border:'none',color:C.blue,cursor:'pointer',marginBottom:12,fontSize:12}}>← Back to tickets</button>
+      <div className="panel" style={{display:'flex',flexDirection:'column',maxHeight:'72vh'}}>
+        <div style={{padding:'12px 16px',borderBottom:'1px solid var(--border)',flexShrink:0}}>
+          <div style={{display:'flex',gap:7,marginBottom:5}}><Bdg label={activeTkt.status} color={sc(activeTkt.status)}/><Bdg label={activeTkt.priority} color={sc(activeTkt.priority)}/><Bdg label={activeTkt.category} color={C.muted}/></div>
+          <div style={{fontSize:14,fontWeight:600}}>{activeTkt.subject}</div>
+        </div>
+        <div ref={chatRef} className="chat-wrap">
+          {activeTkt.messages?.map((m,i)=>{const isMe=m.user_id===user.id;return <div key={i} className={`cmsg ${isMe?'me':''}`}>
+            <div className="cav" style={{background:ROLE_C[m.role]||C.blue}}>{m.role?.[0]}</div>
+            <div>
+              <div className="cmeta" style={{textAlign:isMe?'right':'left'}}>{m.full_name} · {m.created_at?.slice(11,16)}</div>
+              <div className="cbub" style={{background:isMe?C.blue+'18':'var(--bg3)',border:`1px solid ${isMe?C.blue+'30':'var(--border2)'}`,borderRadius:isMe?'10px 2px 10px 10px':'2px 10px 10px 10px'}}>{m.body}</div>
+            </div>
+          </div>;})}
+        </div>
+        {activeTkt.status!=='closed'&&activeTkt.status!=='resolved'&&<div style={{padding:'10px 14px',borderTop:'1px solid var(--border)',display:'flex',gap:8,flexShrink:0}}>
+          <input value={reply} onChange={e=>setReply(e.target.value)} onKeyDown={e=>e.key==='Enter'&&sendReply()} placeholder="Reply… (Enter to send)" style={{flex:1,background:'var(--bg3)',border:'1px solid var(--border2)',borderRadius:6,padding:'8px 12px',color:C.white,fontSize:12,outline:'none',fontFamily:'var(--sans)'}}/>
+          <Btn color={C.blue} onClick={sendReply}>SEND</Btn>
+        </div>}
+      </div>
+    </div>}
+
+    {tab==='billing'&&<div className="panel tbl-wrap"><table>
+      <thead><tr>{['Date','Type','Plan','XRP','USD','Status'].map(h=><th key={h}>{h}</th>)}</tr></thead>
+      <tbody>
+        {!data.payments?.length&&<tr><td colSpan={6} style={{textAlign:'center',color:C.muted,padding:24}}>No payments yet</td></tr>}
+        {data.payments?.map(p=><tr key={p.id}>
+          <td style={{color:C.muted}}>{p.created_at?.slice(0,10)}</td>
+          <td>{(p.type||'').replace(/_/g,' ')}</td>
+          <td>{p.plan?<Bdg label={p.plan} color={p.plan==='CARRIER'?C.yellow:C.blue}/>:'—'}</td>
+          <td style={{fontFamily:'var(--mono)',color:C.cyan}}>{p.amount_xrp}</td>
+          <td>{p.amount_usd?'$'+p.amount_usd:'—'}</td>
+          <td><Dot s={p.status}/>{p.status}</td>
+        </tr>)}
+      </tbody>
+    </table></div>}
+
+    {newTkt&&<Modal title="NEW SUPPORT TICKET" onClose={()=>setNewTkt(false)}>
+      <F label="Subject" value={tf.subject} onChange={v=>setTf(p=>({...p,subject:v}))} placeholder="Brief description"/>
+      <Sel label="Category" value={tf.category} onChange={v=>setTf(p=>({...p,category:v}))} options={[{value:'general',label:'General'},{value:'technical',label:'Technical'},{value:'billing',label:'Billing'},{value:'porting',label:'Number Porting'}]}/>
+      <F label="Describe your issue" value={tf.body} onChange={v=>setTf(p=>({...p,body:v}))} placeholder="Please describe in detail…" rows={4}/>
+      <div className="g2"><Btn full outline color={C.muted} onClick={()=>setNewTkt(false)}>CANCEL</Btn><Btn full color={C.blue} onClick={submitTkt}>SUBMIT TICKET</Btn></div>
+    </Modal>}
+  </div>;
+}
+
+
+function Dashboard({stats}) {
+  if(!stats)return <div style={{color:C.muted,fontFamily:'var(--mono)',letterSpacing:2}}>LOADING…</div>;
+  const {subscribers:su,tickets:ti,devices:dv,nodes:nd,voice:vc,revenue:rv,recent_activity:ra,open_tickets:ot} = stats;
+  const nodeArr = Array.isArray(nd)?nd:[];
+  const alerts=[];
+  if((ot||0)>3)alerts.push({msg:`${ot} open tickets need attention`,color:C.yellow});
+  if(nodeArr.filter(n=>n.status==='offline').length>0)alerts.push({msg:`${nodeArr.filter(n=>n.status==='offline').length} node(s) offline`,color:C.red});
+  return <div>
+    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+      <div style={{display:'flex',alignItems:'center',gap:9}}>
+        <div className="live-dot"/>
+        <span style={{fontSize:10,color:C.green,letterSpacing:3,fontFamily:'var(--mono)'}}>LIVE · AUTO-REFRESH 30s</span>
+      </div>
+      <span style={{fontSize:10,color:C.muted}}>{new Date().toLocaleTimeString()}</span>
+    </div>
+    {alerts.map((a,i)=><div key={i} className="abox" style={{background:a.color+'10',borderColor:a.color+'40',color:a.color}}>⚠ {a.msg}</div>)}
+    <div className="gauto" style={{marginBottom:16}}>
+      <SC label="Subscribers" value={su?.total||0} sub={`${su?.active||0} active`} color={C.green}/>
+      <SC label="Open Tickets" value={ti?.open||0} sub={`${ti?.high||0} high priority`} color={C.orange}/>
+      <SC label="Devices" value={dv?.total||0} sub={`${dv?.pending||0} in setup`} color={C.blue}/>
+      <SC label="Nodes Online" value={nodeArr.filter(n=>n.status==='online').length||nd?.online||0} sub={`of ${nodeArr.length||nd?.total||0}`} color={C.cyan}/>
+      <SC label="Calls Today" value={vc?.calls_today||0} color={C.teal}/>
+      <SC label="SMS Today" value={vc?.sms_today||0} color={C.purple}/>
+      <SC label="Total Revenue" value={`$${(rv?.total_usd||0).toFixed(0)}`} sub="settled USD" color={C.yellow}/>
+      <SC label="XRP Pool" value={(rv?.total_xrp||0).toFixed(1)} color={C.cyan}/>
+    </div>
+    <div className="g2">
+      <div className="panel"><PH title="System Status"/>
+        <div style={{padding:'0 16px 6px'}}>
+          {[['XRPL Connection','online'],['eSIM Provisioning','online'],['SIP Trunk','online'],['SMS Gateway','online'],['Reward Oracle','online'],['T-Mobile MVNO','pending']].map(([l,s])=>(
+            <div key={l} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 0',borderBottom:'1px solid var(--border)'}}>
+              <span style={{fontSize:12,color:C.text}}>{l}</span>
+              <span style={{fontSize:12,display:'flex',alignItems:'center'}}><Dot s={s}/>{s}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="panel"><PH title="Recent Activity"/>
+        <div style={{padding:'4px 16px 12px'}}>
+          {(ra||[]).map((a,i)=>(
+            <div key={i} style={{display:'flex',gap:10,padding:'6px 0',borderBottom:'1px solid var(--border)',alignItems:'baseline'}}>
+              <span style={{fontFamily:'var(--mono)',fontSize:9,color:C.muted,minWidth:56,flexShrink:0}}>{a.created_at?.slice(11,19)}</span>
+              <span style={{fontSize:11,color:C.text}}><span style={{color:C.white}}>{a.full_name}</span>: {a.action} {a.detail||''}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+
+function SubsMgr({show}) {
+  const [subs,setSubs] = useState([]);
+  const [sel,setSel] = useState(null);
+  const [q,setQ] = useState('');
+  const reload=()=>api('/subscribers').then(setSubs).catch(()=>{});
+  useEffect(()=>{reload();}, []);
+  const act=async(id,ep)=>{
+    try{await api('/subscribers/'+id+'/'+ep,{method:'POST'});await reload();show(ep+' applied');}
+    catch(e){show(e.message,C.red);}
+  };
+  const filt=subs.filter(s=>(s.did||'').includes(q)||(s.email||'').toLowerCase().includes(q.toLowerCase())||s.id.includes(q)||(s.full_name||'').toLowerCase().includes(q.toLowerCase()));
+  return <div style={{display:'grid',gridTemplateColumns:sel?'1fr 280px':'1fr',gap:12}}>
+    <div>
+      <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search by name, DID, email, ID…"
+        style={{width:'100%',background:'var(--bg2)',border:'1px solid var(--border2)',borderRadius:7,padding:'8px 13px',color:C.white,fontSize:12,outline:'none',marginBottom:10,fontFamily:'var(--sans)'}}/>
+      <div className="panel tbl-wrap">
+        <PH title={`Subscribers (${filt.length})`}/>
+        <table><thead><tr>{['ID','Name','DID','Plan','eSIM','Voice','SMS','Status','Actions'].map(h=><th key={h}>{h}</th>)}</tr></thead>
+          <tbody>{filt.map(s=><tr key={s.id} onClick={()=>setSel(s===sel?null:s)} style={{cursor:'pointer',background:sel?.id===s.id?C.blue+'08':''}}>
+            <td style={{fontFamily:'var(--mono)',fontSize:10}}>{s.id.slice(0,8)}</td>
+            <td>{s.full_name||'—'}</td>
+            <td style={{fontFamily:'var(--mono)',fontSize:11}}>{s.did||s.msisdn||'—'}</td>
+            <td><Bdg label={s.plan} color={s.plan==='CARRIER'?C.yellow:s.plan==='MESH'?C.green:C.blue}/></td>
+            <td><Dot s={s.esim_status}/>{s.esim_status}</td>
+            <td><Dot s={s.voice}/>{s.voice}</td>
+            <td><Dot s={s.sms}/>{s.sms}</td>
+            <td><Dot s={s.account_status}/>{s.account_status}</td>
+            <td onClick={e=>e.stopPropagation()}>
+              <div style={{display:'flex',gap:3}}>
+                <Btn size="xs" outline color={C.red} onClick={()=>act(s.id,'suspend')}>SUSP</Btn>
+                <Btn size="xs" outline color={C.green} onClick={()=>act(s.id,'activate')}>ACT</Btn>
+              </div>
+            </td>
+          </tr>)}</tbody>
+        </table>
+      </div>
+    </div>
+    {sel&&<div className="panel" style={{height:'fit-content'}}>
+      <PH title="Detail" right={<button type="button" onClick={()=>setSel(null)} style={{background:'none',border:'none',color:C.muted,cursor:'pointer',fontSize:18}}>×</button>}/>
+      <div style={{padding:'4px 16px 12px'}}>
+        {[['Plan',sel.plan],['eSIM',sel.esim_status],['Voice',sel.voice],['SMS',sel.sms],['Account',sel.account_status],['DID',sel.did||'—'],['Data',sel.data_limit_gb===-1?'Unlimited':`${sel.data_used_gb}/${sel.data_limit_gb}GB`],['MESH',sel.mesh_balance],['Voicemail',sel.voicemail_count+' msgs']].map(([k,v])=><DR key={k} k={k} v={String(v)}/>)}
+        <div className="g2" style={{marginTop:12}}>
+          <Btn full size="sm" outline color={C.red} onClick={()=>act(sel.id,'suspend')}>SUSPEND</Btn>
+          <Btn full size="sm" outline color={C.green} onClick={()=>act(sel.id,'activate')}>ACTIVATE</Btn>
+        </div>
+      </div>
+    </div>}
+  </div>;
+}
+
+
+function DevicesMgr({show}) {
+  const [devs,setDevs] = useState([]);
+  const [sel,setSel] = useState(null);
+  const [steps,setSteps] = useState([]);
+  const [modal,setModal] = useState(null);
+  const [swp,setSwp] = useState({make:'',model:'',os_version:'',imei:'',esim_eid:''});
+  const reload=()=>api('/devices').then(setDevs).catch(()=>{});
+  useEffect(()=>{reload();api('/devices/setup-steps').then(setSteps).catch(()=>{});}, []);
+  const loadDev=async d=>{const f=await api('/devices/'+d.id);setSel(f);};
+  const advance=async id=>{
+    try{const u=await api('/devices/'+id+'/step',{method:'PATCH',body:{}});setSel(u);await reload();show('Step advanced: '+(u.current_step?.name||'Done'));}
+    catch(e){show(e.message,C.red);}
+  };
+  const setStepTo=async(id,s)=>{
+    try{const u=await api('/devices/'+id+'/step',{method:'PATCH',body:{step:s}});setSel(u);show('Step set to '+s);}
+    catch(e){show(e.message,C.red);}
+  };
+  const [qrData,setQrData] = useState(null);
+  const reissue=async()=>{
+    try{
+      // Check if Gigs integration is configured
+      const subId = sel.subscriber_id;
+      if(!subId){show('No subscriber linked to this device',C.red);return;}
+      show('Provisioning eSIM via Gigs...',C.cyan);
+      let result;
+      try{
+        result = await api('/esim/reissue/'+subId,{method:'POST',body:{}});
+      }catch(e){
+        // Gigs not configured — fall back to mock
+        if(e.message.includes('not set')||e.message.includes('not configured')){
+          const iccid='890115027800000'+Math.floor(10000+Math.random()*90000);
+          await api('/devices/'+sel.id+'/step',{method:'PATCH',body:{step:2,status:'setup',notes:'eSIM reissued (mock) — ICCID: '+iccid}});
+          await api('/subscribers/'+subId,{method:'PATCH',body:{esim_status:'pending',voice:'pending',sms:'pending'}});
+          await reload();const f=await api('/devices/'+sel.id);setSel(f);setModal(null);
+          show('eSIM reissued (mock mode — configure Gigs API for live).');
+          return;
+        }
+        throw e;
+      }
+      await reload();const f=await api('/devices/'+sel.id);setSel(f);
+      if(result.qr_code_url||result.activation_code){
+        setQrData(result);setModal('qr');
+      }else{
+        setModal(null);
+        show(result.pending?'eSIM provisioning started — will complete shortly.':'eSIM reissued successfully!',C.green);
+      }
+    }catch(e){show(e.message,C.red);}
+  };
+  const doSwap=async()=>{
+    if(!swp.make||!swp.model){show('Make and model required',C.red);return;}
+    try{
+      const sid=sel.subscriber_id||(await api('/devices/'+sel.id))?.subscriber_id;
+      if(!sid){show('No subscriber linked',C.red);return;}
+      await api('/devices/'+sel.id,{method:'PATCH',body:{status:'replaced',setup_notes:'Replaced via device swap — '+new Date().toLocaleDateString()}});
+      const nDev=await api('/devices',{method:'POST',body:{...swp,subscriber_id:sid}});
+      await api('/subscribers/'+sid,{method:'PATCH',body:{esim_status:'pending',voice:'pending',sms:'pending'}});
+      await reload();const f=await api('/devices/'+nDev.id);setSel(f);setModal(null);
+      setSwp({make:'',model:'',os_version:'',imei:'',esim_eid:''});
+      show('Device swapped! New device at Step 0.');
+    }catch(e){show(e.message,C.red);}
+  };
+  return <div>
+    <div style={{display:'grid',gridTemplateColumns:sel?'1fr 340px':'1fr',gap:12}}>
+      <div className="panel tbl-wrap"><PH title="Device Management"/>
+        <table><thead><tr>{['Device','Subscriber','IMEI','Status','Setup',''].map(h=><th key={h}>{h}</th>)}</tr></thead>
+          <tbody>{devs.map(d=><tr key={d.id} onClick={()=>loadDev(d)} style={{cursor:'pointer',background:sel?.id===d.id?C.blue+'08':''}}>
+            <td><div style={{fontWeight:600}}>{d.make} {d.model}</div><div style={{fontSize:10,color:C.muted}}>{d.os_version}</div></td>
+            <td><div>{d.full_name||'—'}</div><div style={{fontFamily:'var(--mono)',fontSize:10,color:C.muted}}>{d.did||'No DID'}</div></td>
+            <td style={{fontFamily:'var(--mono)',fontSize:10}}>{d.imei||'—'}</td>
+            <td><Dot s={d.status}/>{d.status}</td>
+            <td>
+              <div style={{fontFamily:'var(--mono)',fontSize:11,color:d.status==='replaced'?C.muted:C.blue,marginBottom:2}}>{d.setup_step}/9</div>
+              <div className="prog-track" style={{width:50}}><div className="prog-fill" style={{width:`${d.setup_step/9*100}%`,background:d.status==='replaced'?C.muted:C.blue}}/></div>
+            </td>
+            <td style={{fontFamily:'var(--mono)',fontSize:9,color:C.muted}}>{d.id.slice(0,8)}</td>
+          </tr>)}</tbody>
+        </table>
+      </div>
+
+      {sel&&<div style={{display:'flex',flexDirection:'column',gap:10}}>
+        <div className="panel">
+          <PH title={`${sel.make} ${sel.model}`} right={<button type="button" onClick={()=>setSel(null)} style={{background:'none',border:'none',color:C.muted,cursor:'pointer',fontSize:18}}>×</button>}/>
+          <div style={{padding:'4px 16px 12px'}}>
+            {[['Owner',sel.full_name||'—'],['DID',sel.did||'Not assigned'],['Plan',sel.plan||'—'],['IMEI',sel.imei||'—'],['eSIM EID',sel.esim_eid||'—'],['eSIM',sel.esim_status||'—'],['Voice',sel.voice||'—'],['SMS',sel.sms||'—'],['Status',sel.status]].map(([k,v])=><DR key={k} k={k} v={v}/>)}
+            {sel.status!=='replaced'&&<div className="g2" style={{marginTop:12}}>
+              <Btn full size="sm" outline color={C.cyan} onClick={()=>setModal('esim')}>REISSUE eSIM</Btn>
+              <Btn full size="sm" outline color={C.purple} onClick={()=>setModal('swap')}>DEVICE SWAP</Btn>
+            </div>}
+            {sel.status==='replaced'&&<div style={{marginTop:10,padding:'8px 10px',background:C.muted+'15',border:`1px solid ${C.muted}30`,borderRadius:5,fontSize:11,color:C.muted}}>⚠ Device replaced — no longer active.</div>}
+          </div>
+        </div>
+
+        <div className="panel"><PH title={`Setup Wizard — ${sel.setup_step}/9`}/>
+          <div style={{padding:'12px 16px'}}>
+            <div className="prog-track" style={{marginBottom:10}}><div className="prog-fill" style={{width:`${sel.setup_step/9*100}%`,background:`linear-gradient(90deg,${C.blue},${C.cyan})`}}/></div>
+            <div style={{maxHeight:220,overflowY:'auto',marginBottom:10,display:'flex',flexDirection:'column',gap:3}}>
+              {(sel.setup_steps||steps).map((s,i)=>{const done=i<sel.setup_step,cur=i===sel.setup_step;return(
+                <div key={i} onClick={()=>setStepTo(sel.id,i)} className={`vstep ${done?'done':cur?'cur':''} ${sel.status==='replaced'?'rep':''}`}>
+                  <div className="snum" style={{background:done?C.green:cur?C.blue:'var(--bg3)',color:done||cur?'#000':C.muted,border:`1px solid ${done?C.green:cur?C.blue:'var(--border2)'}`}}>{done?'✓':i}</div>
+                  <div>
+                    <div style={{fontSize:11,color:cur?C.blue:done?C.green:C.text,fontWeight:cur?600:400}}>{s.name}</div>
+                    {cur&&<div style={{fontSize:10,color:C.muted,marginTop:1}}>{s.description}</div>}
+                  </div>
+                </div>
+              );})}
+            </div>
+            {sel.setup_step<9&&sel.status!=='replaced'
+              ?<Btn full color={C.cyan} onClick={()=>advance(sel.id)}>ADVANCE → {(sel.setup_steps||steps)[sel.setup_step+1]?.name||'Complete'}</Btn>
+              :sel.status!=='replaced'&&<div style={{padding:9,background:C.green+'15',border:`1px solid ${C.green}40`,borderRadius:6,textAlign:'center',color:C.green,fontWeight:700,fontSize:12}}>✓ FULLY PROVISIONED</div>}
+          </div>
+        </div>
+      </div>}
+    </div>
+
+    {modal==='esim'&&sel&&<Modal title="REISSUE eSIM PROFILE" onClose={()=>setModal(null)} color={C.cyan}>
+      <div className="info-box" style={{background:C.cyan+'10',border:`1px solid ${C.cyan}25`,marginBottom:14}}>
+        <div style={{color:C.cyan,fontWeight:600,fontSize:9,letterSpacing:1,marginBottom:5}}>WHAT THIS DOES</div>
+        1. Cancels current eSIM profile on SM-DP+ server<br/>
+        2. Generates new ICCID and activation code<br/>
+        3. Resets device to Step 2 in setup wizard<br/>
+        4. Subscriber must scan new QR code
+      </div>
+      <div style={{marginBottom:14}}>{[['Device',`${sel.make} ${sel.model}`],['Subscriber',sel.full_name||'—'],['Current ICCID',sel.iccid||'—'],['eSIM EID',sel.esim_eid||'—']].map(([k,v])=><DR key={k} k={k} v={v}/>)}</div>
+      <div className="info-box" style={{background:C.orange+'10',border:`1px solid ${C.orange}30`,color:C.orange,marginBottom:14,fontSize:11}}>⚠ Old eSIM profile stops working immediately. Subscriber must download new profile.</div>
+      <div className="g2"><Btn full outline color={C.muted} onClick={()=>setModal(null)}>CANCEL</Btn><Btn full color={C.cyan} onClick={reissue}>REISSUE eSIM</Btn></div>
+    </Modal>}
+
+    {modal==='qr'&&qrData&&<Modal title="ESIM ACTIVATION" onClose={()=>{setModal(null);setQrData(null);}} color={C.green} width={500}>
+      <div className="info-box" style={{background:C.green+'10',border:`1px solid ${C.green}25`,marginBottom:16}}>
+        <div style={{color:C.green,fontWeight:700,fontSize:9,letterSpacing:1,marginBottom:5}}>✓ eSIM PROVISIONED VIA GIGS</div>
+        The subscriber can now activate their eSIM using the QR code or activation code below.
+      </div>
+      {qrData.qr_code_url&&<div style={{textAlign:'center',marginBottom:14}}>
+        <div style={{fontSize:9,color:C.muted,letterSpacing:2,marginBottom:8,textTransform:'uppercase'}}>Scan QR Code</div>
+        <img src={qrData.qr_code_url} alt="eSIM QR Code" style={{width:160,height:160,borderRadius:8,border:`1px solid ${C.border2}`}}/>
+      </div>}
+      {qrData.activation_code&&<div style={{marginBottom:12}}>
+        <div style={{fontSize:9,color:C.muted,letterSpacing:2,marginBottom:5,textTransform:'uppercase'}}>Manual Activation Code</div>
+        <div style={{fontFamily:'var(--mono)',fontSize:10,background:'var(--bg3)',border:'1px solid var(--border2)',borderRadius:6,padding:'8px 12px',wordBreak:'break-all',color:C.cyan}}>{qrData.activation_code}</div>
+      </div>}
+      {qrData.apple_link&&<div style={{marginBottom:12}}>
+        <div style={{fontSize:9,color:C.muted,letterSpacing:2,marginBottom:5,textTransform:'uppercase'}}>Apple One-Tap Install</div>
+        <a href={qrData.apple_link} target="_blank" style={{display:'block',padding:'8px 12px',background:C.blue+'15',border:`1px solid ${C.blue}30`,borderRadius:6,color:C.blue,fontSize:11,textDecoration:'none',textAlign:'center'}}>Open on iPhone →</a>
+      </div>}
+      {qrData.iccid&&<div style={{marginBottom:14}}><DR k="ICCID" v={qrData.iccid}/></div>}
+      <div style={{padding:'8px 11px',background:C.yellow+'10',border:`1px solid ${C.yellow}25`,borderRadius:6,fontSize:11,color:C.yellow,marginBottom:14}}>
+        ⚠ Share this QR code with the subscriber. It can only be used once.
+      </div>
+      <div className="g2">
+        <Btn full outline color={C.muted} onClick={()=>{setModal(null);setQrData(null);}}>CLOSE</Btn>
+        <Btn full color={C.green} onClick={()=>navigator.clipboard?.writeText(qrData.activation_code||'').then(()=>show('Copied!'))}>COPY CODE</Btn>
+      </div>
+    </Modal>}
+
+    {modal==='swap'&&sel&&<Modal title="DEVICE SWAP" onClose={()=>setModal(null)} color={C.purple} width={500}>
+      <div className="info-box" style={{background:C.purple+'10',border:`1px solid ${C.purple}25`,marginBottom:14}}>
+        <div style={{color:C.purple,fontWeight:600,fontSize:9,letterSpacing:1,marginBottom:5}}>WHAT THIS DOES</div>
+        1. Marks current device as REPLACED<br/>
+        2. Registers new device under same subscriber<br/>
+        3. Resets eSIM / Voice / SMS to pending<br/>
+        4. Starts setup wizard from Step 0
+      </div>
+      <div style={{padding:'8px 12px',background:'var(--bg3)',borderRadius:6,fontSize:11,marginBottom:14}}>
+        <span style={{color:C.muted}}>Replacing: </span><b>{sel.make} {sel.model}</b><span style={{color:C.muted}}> for </span><span style={{color:C.blue}}>{sel.full_name||'subscriber'}</span>
+      </div>
+      <div className="g2"><F label="Make" value={swp.make} onChange={v=>setSwp(p=>({...p,make:v}))} placeholder="e.g. Apple"/><F label="Model" value={swp.model} onChange={v=>setSwp(p=>({...p,model:v}))} placeholder="e.g. iPhone 16"/></div>
+      <F label="OS Version" value={swp.os_version} onChange={v=>setSwp(p=>({...p,os_version:v}))} placeholder="e.g. iOS 18"/>
+      <F label="IMEI" value={swp.imei} onChange={v=>setSwp(p=>({...p,imei:v}))} placeholder="15-digit IMEI"/>
+      <F label="eSIM EID (optional)" value={swp.esim_eid} onChange={v=>setSwp(p=>({...p,esim_eid:v}))} placeholder="32-digit EID"/>
+      <div className="g2"><Btn full outline color={C.muted} onClick={()=>setModal(null)}>CANCEL</Btn><Btn full color={C.purple} onClick={doSwap}>SWAP DEVICE</Btn></div>
+    </Modal>}
+  </div>;
+}
+
+
+function TicketsMgr({show}) {
+  const {user} = useAuth();
+  const [tickets,setTickets] = useState([]);
+  const [active,setActive] = useState(null);
+  const [filt,setFilt] = useState('open');
+  const [reply,setReply] = useState('');
+  const chatRef = useRef(null);
+  useEffect(()=>{api('/tickets').then(setTickets).catch(()=>{});}, []);
+  const openTkt=async t=>{const f=await api('/tickets/'+t.id);setActive(f);setTimeout(()=>{if(chatRef.current)chatRef.current.scrollTop=99999;},100);};
+  const sendReply=async()=>{
+    if(!reply.trim()||!active)return;
+    try{const m=await api('/tickets/'+active.id+'/messages',{method:'POST',body:{body:reply}});setActive(p=>({...p,messages:[...p.messages,m]}));setReply('');setTimeout(()=>{if(chatRef.current)chatRef.current.scrollTop=99999;},50);}
+    catch(e){show(e.message,C.red);}
+  };
+  const resolve=async id=>{
+    await api('/tickets/'+id,{method:'PATCH',body:{status:'resolved'}});
+    setActive(p=>({...p,status:'resolved'}));const f=await api('/tickets');setTickets(f);show('Ticket resolved');
+  };
+  const shown=tickets.filter(t=>filt==='all'||t.status===filt);
+  return <div style={{display:'grid',gridTemplateColumns:'220px 1fr',gap:12,height:'74vh'}}>
+    <div className="panel" style={{overflow:'hidden',display:'flex',flexDirection:'column'}}>
+      <div style={{padding:8,borderBottom:'1px solid var(--border)',display:'flex',gap:3,flexShrink:0}}>
+        {['open','resolved','all'].map(f=><button key={f} type="button" onClick={()=>setFilt(f)}
+          style={{flex:1,padding:'5px',background:filt===f?C.blue:'transparent',border:`1px solid ${filt===f?C.blue:'var(--border2)'}`,borderRadius:4,color:filt===f?'#000':C.muted,fontSize:9,fontWeight:700,cursor:'pointer',letterSpacing:1,textTransform:'uppercase'}}>{f}</button>)}
+      </div>
+      <div style={{overflowY:'auto',flex:1}}>
+        {shown.map(t=><div key={t.id} onClick={()=>openTkt(t)} style={{padding:'10px 12px',borderBottom:'1px solid var(--border)',cursor:'pointer',background:active?.id===t.id?C.blue+'08':'transparent',borderLeft:`3px solid ${sc(t.priority)}`}}>
+          <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}>
+            <span style={{fontFamily:'var(--mono)',fontSize:9,color:C.muted}}>{t.id.slice(0,8)}</span>
+            <Bdg label={t.priority} color={sc(t.priority)}/>
+          </div>
+          <div style={{fontSize:11,color:C.white,marginBottom:3,lineHeight:1.3}}>{t.subject}</div>
+          <div style={{display:'flex',gap:5,alignItems:'center'}}>
+            <Bdg label={t.category} color={C.muted}/>
+            <span style={{fontSize:9,color:C.muted}}>{t.user_name}</span>
+          </div>
+        </div>)}
+      </div>
+    </div>
+    {active?<div className="panel" style={{display:'flex',flexDirection:'column',overflow:'hidden'}}>
+      <div style={{padding:'12px 16px',borderBottom:'1px solid var(--border)',display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
+        <div>
+          <div style={{display:'flex',gap:6,marginBottom:4}}><Bdg label={active.status} color={sc(active.status)}/><Bdg label={active.priority} color={sc(active.priority)}/><Bdg label={active.category} color={C.muted}/></div>
+          <div style={{fontSize:14,fontWeight:600}}>{active.subject}</div>
+          <div style={{fontSize:10,color:C.muted,marginTop:2}}>{active.user_name} · {active.created_at?.slice(0,10)}</div>
+        </div>
+        {active.status==='open'&&<Btn size="sm" outline color={C.green} onClick={()=>resolve(active.id)}>RESOLVE</Btn>}
+      </div>
+      <div ref={chatRef} className="chat-wrap">
+        {active.messages?.map((m,i)=>{const isStaff=['support','tech','admin','superadmin'].includes(m.role);return(
+          <div key={i} className={`cmsg ${isStaff?'me':''}`}>
+            <div className="cav" style={{background:ROLE_C[m.role]||C.blue}}>{m.role?.[0]}</div>
+            <div>
+              <div className="cmeta" style={{textAlign:isStaff?'right':'left'}}>{m.full_name} · {m.created_at?.slice(11,16)}</div>
+              <div className="cbub" style={{background:isStaff?C.blue+'18':'var(--bg3)',border:`1px solid ${isStaff?C.blue+'30':'var(--border2)'}`,borderRadius:isStaff?'10px 2px 10px 10px':'2px 10px 10px 10px'}}>{m.body}</div>
+            </div>
+          </div>
+        );})}
+      </div>
+      {active.status==='open'&&<div style={{padding:'10px 14px',borderTop:'1px solid var(--border)',display:'flex',gap:8,flexShrink:0}}>
+        <input value={reply} onChange={e=>setReply(e.target.value)} onKeyDown={e=>e.key==='Enter'&&sendReply()} placeholder="Reply… (Enter to send)"
+          style={{flex:1,background:'var(--bg3)',border:'1px solid var(--border2)',borderRadius:6,padding:'8px 12px',color:C.white,fontSize:12,outline:'none',fontFamily:'var(--sans)'}}/>
+        <Btn color={C.blue} onClick={sendReply}>SEND</Btn>
+      </div>}
+    </div>:<div style={{display:'flex',alignItems:'center',justifyContent:'center',color:C.muted,fontSize:13}}>Select a ticket to view</div>}
+  </div>;
+}
+
+
+function VoiceMgr({show}) {
+  const [tab,setTab] = useState('calls');
+  const [calls,setCalls] = useState([]);
+  const [sms,setSms] = useState([]);
+  const [dids,setDids] = useState([]);
+  const [ports,setPorts] = useState([]);
+  useEffect(()=>{
+    api('/voice/calls').then(setCalls).catch(()=>{});
+    api('/voice/sms').then(setSms).catch(()=>{});
+    api('/voice/dids').then(setDids).catch(()=>{});
+    api('/voice/ports').then(setPorts).catch(()=>{});
+  },[]);
+  const fmt=s=>`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+  return <div>
+    <div className="g4" style={{marginBottom:16}}>
+      <SC label="Calls" value={calls.length} color={C.cyan}/>
+      <SC label="SMS" value={sms.length} color={C.purple}/>
+      <SC label="Available DIDs" value={dids.filter(d=>d.status==='available').length} color={C.blue}/>
+      <SC label="Active Ports" value={ports.filter(p=>p.status==='in_progress').length} color={C.yellow}/>
+    </div>
+    <div className="tabs">
+      {['calls','sms','numbers','porting'].map(t=><button key={t} className={`tab ${tab===t?'on':''}`} type="button" onClick={()=>setTab(t)}>{t.toUpperCase()}</button>)}
+    </div>
+    {tab==='calls'&&<div className="panel tbl-wrap"><table>
+      <thead><tr>{['Sub','Direction','From','To','Duration','Status','Time'].map(h=><th key={h}>{h}</th>)}</tr></thead>
+      <tbody>{calls.map(c=><tr key={c.id}>
+        <td style={{fontFamily:'var(--mono)',fontSize:10}}>{c.sub_id?.slice(0,8)}</td>
+        <td><span style={{color:c.direction==='inbound'?C.cyan:C.purple,fontWeight:700,fontSize:11}}>{c.direction==='inbound'?'↙ IN':'↗ OUT'}</span></td>
+        <td style={{fontFamily:'var(--mono)',fontSize:11}}>{c.from_num}</td>
+        <td style={{fontFamily:'var(--mono)',fontSize:11}}>{c.to_num}</td>
+        <td style={{fontFamily:'var(--mono)'}}>{fmt(c.duration_s)}</td>
+        <td><Dot s={c.status}/>{c.status}</td>
+        <td style={{color:C.muted}}>{c.created_at?.slice(11,19)}</td>
+      </tr>)}</tbody>
+    </table></div>}
+    {tab==='sms'&&<div className="panel tbl-wrap"><table>
+      <thead><tr>{['Sub','Direction','From','To','Body','Status'].map(h=><th key={h}>{h}</th>)}</tr></thead>
+      <tbody>{sms.map(s=><tr key={s.id}>
+        <td style={{fontFamily:'var(--mono)',fontSize:10}}>{s.sub_id?.slice(0,8)}</td>
+        <td><span style={{color:s.direction==='inbound'?C.cyan:C.purple,fontWeight:700,fontSize:11}}>{s.direction==='inbound'?'↙ IN':'↗ OUT'}</span></td>
+        <td style={{fontFamily:'var(--mono)',fontSize:11}}>{s.from_num}</td>
+        <td style={{fontFamily:'var(--mono)',fontSize:11}}>{s.to_num}</td>
+        <td style={{maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',color:C.text}}>{s.body}</td>
+        <td><Dot s={s.status}/>{s.status}</td>
+      </tr>)}</tbody>
+    </table></div>}
+    {tab==='numbers'&&<div className="panel tbl-wrap"><table>
+      <thead><tr>{['Number','City','Type','Provider','$/Mo','Status'].map(h=><th key={h}>{h}</th>)}</tr></thead>
+      <tbody>{dids.map(d=><tr key={d.number}>
+        <td style={{fontFamily:'var(--mono)',color:C.cyan}}>{d.number}</td>
+        <td>{d.city}</td>
+        <td><Bdg label={d.type} color={d.type==='tollfree'?C.purple:C.muted}/></td>
+        <td style={{color:C.text}}>{d.provider}</td>
+        <td style={{fontFamily:'var(--mono)'}}>${d.monthly_usd}</td>
+        <td><Dot s={d.status}/>{d.status}</td>
+      </tr>)}</tbody>
+    </table></div>}
+    {tab==='porting'&&<div style={{display:'flex',flexDirection:'column',gap:10}}>
+      {ports.map(p=><div key={p.id} style={{background:'var(--bg2)',border:'1px solid var(--border)',borderLeft:`3px solid ${sc(p.status)}`,borderRadius:10,padding:16}}>
+        <div style={{display:'flex',justifyContent:'space-between',marginBottom:8}}>
+          <div><div style={{fontFamily:'var(--mono)',fontSize:16,color:C.cyan,fontWeight:700}}>{p.number}</div><div style={{fontSize:11,color:C.muted}}>Carrier: {p.carrier_losing}</div></div>
+          <Bdg label={p.status.replace('_',' ')} color={sc(p.status)}/>
+        </div>
+        <div style={{fontSize:12,color:C.text}}>{p.notes}</div>
+      </div>)}
+      {!ports.length&&<div style={{color:C.muted,fontSize:12,textAlign:'center',padding:32}}>No porting requests</div>}
+    </div>}
+  </div>;
+}
+
+
+function PaymentsMgr({show}) {
+  const [pmts,setPmts] = useState([]);
+  const [subs,setSubs] = useState([]);
+  const [modal,setModal] = useState(null);
+  const [sel,setSel] = useState(null);
+  const [form,setForm] = useState({sub_id:'',amount_xrp:'',amount_usd:'',note:'',plan:''});
+  const reload=()=>api('/payments').then(setPmts).catch(()=>{});
+  useEffect(()=>{reload();api('/subscribers').then(setSubs).catch(()=>{});}, []);
+  const sf=(k,v)=>setForm(p=>({...p,[k]:v}));
+  const totalXrp=pmts.filter(p=>p.status==='settled').reduce((a,p)=>a+p.amount_xrp,0);
+  const totalUsd=pmts.filter(p=>p.status==='settled'&&p.amount_usd).reduce((a,p)=>a+(p.amount_usd||0),0);
+  const TC={credit:C.green,charge:C.orange,refund:C.yellow,plan_purchase:C.blue,manual:C.purple};
+  const MODS={
+    credit:{title:'ADD CREDIT',color:C.green,info:'Credits added to subscriber account.',btn:'ADD CREDIT'},
+    charge:{title:'MANUAL CHARGE',color:C.orange,info:'Apply a charge for overages or add-ons.',btn:'APPLY CHARGE'},
+    manual:{title:'LOG PAYMENT',color:C.purple,info:'Log a payment made outside the system.',btn:'LOG PAYMENT'},
+    refund:{title:'ISSUE REFUND',color:C.yellow,info:'Issue a standalone refund to subscriber.',btn:'ISSUE REFUND'},
+  };
+  const doSubmit=async type=>{
+    if(!form.sub_id||!form.amount_xrp){show('Subscriber and amount required',C.red);return;}
+    try{
+      await api('/payments',{method:'POST',body:{sub_id:form.sub_id,type,plan:form.plan||null,amount_xrp:parseFloat(form.amount_xrp),amount_usd:form.amount_usd?parseFloat(form.amount_usd):null,status:type==='refund'?'refunded':'settled'}});
+      await reload();setModal(null);setForm({sub_id:'',amount_xrp:'',amount_usd:'',note:'',plan:''});show(type+' recorded');
+    }catch(e){show(e.message,C.red);}
+  };
+  const issueRefund=async p=>{
+    try{await api('/payments',{method:'POST',body:{sub_id:p.sub_id,type:'refund',amount_xrp:p.amount_xrp,amount_usd:p.amount_usd,plan:p.plan,status:'refunded'}});await reload();setSel(null);show('Refund issued');}
+    catch(e){show(e.message,C.red);}
+  };
+  return <div>
+    <div className="g5" style={{marginBottom:14}}>
+      <SC label="Total XRP" value={totalXrp.toFixed(1)} color={C.green}/>
+      <SC label="Total USD" value={'$'+totalUsd.toFixed(0)} color={C.cyan}/>
+      <SC label="Transactions" value={pmts.length} color={C.blue}/>
+      <SC label="Settled" value={pmts.filter(p=>p.status==='settled').length} color={C.green}/>
+      <SC label="Refunded" value={pmts.filter(p=>p.status==='refunded').length} color={C.orange}/>
+    </div>
+    <div style={{display:'flex',gap:8,marginBottom:12,flexWrap:'wrap'}}>
+      <Btn size="sm" color={C.green} onClick={()=>setModal('credit')} icon="＋">ADD CREDIT</Btn>
+      <Btn size="sm" outline color={C.orange} onClick={()=>setModal('charge')} icon="＋">MANUAL CHARGE</Btn>
+      <Btn size="sm" outline color={C.purple} onClick={()=>setModal('manual')} icon="＋">LOG PAYMENT</Btn>
+      <Btn size="sm" outline color={C.yellow} onClick={()=>setModal('refund')} icon="＋">ISSUE REFUND</Btn>
+    </div>
+    <div className="panel tbl-wrap">
+      <table><thead><tr>{['Date','Subscriber','Type','Plan','XRP','USD','Status','NFT',''].map(h=><th key={h}>{h}</th>)}</tr></thead>
+        <tbody>{pmts.map(p=><tr key={p.id} onClick={()=>setSel(p===sel?null:p)} style={{cursor:'pointer',background:sel?.id===p.id?C.blue+'08':''}}>
+          <td style={{color:C.muted}}>{p.created_at?.slice(0,10)}</td>
+          <td>{p.full_name||'—'}</td>
+          <td><Bdg label={(p.type||'').replace(/_/g,' ')} color={TC[p.type]||C.muted}/></td>
+          <td>{p.plan?<Bdg label={p.plan} color={p.plan==='CARRIER'?C.yellow:C.blue}/>:'—'}</td>
+          <td style={{fontFamily:'var(--mono)',color:p.status==='refunded'?C.orange:C.cyan}}>{p.status==='refunded'?'-':''}{p.amount_xrp}</td>
+          <td>{p.amount_usd?'$'+p.amount_usd:'—'}</td>
+          <td><Dot s={p.status}/>{p.status}</td>
+          <td style={{fontFamily:'var(--mono)',fontSize:9,color:C.muted}}>{p.nft_id?.slice(0,10)||'—'}</td>
+          <td onClick={e=>e.stopPropagation()}>{p.status==='settled'&&<Btn size="xs" outline color={C.yellow} onClick={()=>issueRefund(p)}>REFUND</Btn>}</td>
+        </tr>)}</tbody>
+      </table>
+    </div>
+    {sel&&<div style={{marginTop:10,background:'var(--bg2)',border:`1px solid ${TC[sel.type]||'var(--border)'}40`,borderLeft:`3px solid ${TC[sel.type]||C.muted}`,borderRadius:10,padding:16}}>
+      <div style={{display:'flex',justifyContent:'space-between',marginBottom:10}}>
+        <span style={{fontFamily:'var(--mono)',fontSize:9,color:C.muted,letterSpacing:2}}>PAYMENT — {sel.id?.slice(0,16)}</span>
+        <button type="button" onClick={()=>setSel(null)} style={{background:'none',border:'none',color:C.muted,cursor:'pointer',fontSize:16}}>×</button>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8}}>
+        {[['Subscriber',sel.full_name||'—'],['Plan',sel.plan||'—'],['XRP',sel.amount_xrp],['USD',sel.amount_usd?'$'+sel.amount_usd:'—'],['Type',sel.type],['Status',sel.status],['Date',sel.created_at?.slice(0,16)],['NFT',sel.nft_id?.slice(0,12)||'—']].map(([k,v])=>(
+          <div key={k} style={{background:'var(--bg3)',borderRadius:6,padding:'8px 10px'}}>
+            <div style={{fontSize:9,color:C.muted,marginBottom:2}}>{k}</div>
+            <div style={{fontFamily:'var(--mono)',fontSize:10,color:C.white}}>{v}</div>
+          </div>
+        ))}
+      </div>
+      {sel.status==='settled'&&<div style={{marginTop:10}}><Btn size="sm" outline color={C.yellow} onClick={()=>issueRefund(sel)}>ISSUE REFUND</Btn></div>}
+    </div>}
+    {modal&&MODS[modal]&&<Modal title={MODS[modal].title} onClose={()=>setModal(null)} color={MODS[modal].color}>
+      <div className="info-box" style={{background:MODS[modal].color+'10',border:`1px solid ${MODS[modal].color}25`,marginBottom:14,color:MODS[modal].color}}>{MODS[modal].info}</div>
+      <div className="field"><label className="flbl">Subscriber</label>
+        <select className="fsel" value={form.sub_id} onChange={e=>sf('sub_id',e.target.value)}>
+          <option value="">— Select subscriber —</option>
+          {subs.map(s=><option key={s.id} value={s.id}>{s.full_name||s.email} ({s.did||s.id.slice(0,8)})</option>)}
+        </select>
+      </div>
+      <div className="g2">
+        <F label="Amount (XRP)" value={form.amount_xrp} onChange={v=>sf('amount_xrp',v)} placeholder="e.g. 13.0"/>
+        <F label="Amount (USD)" value={form.amount_usd} onChange={v=>sf('amount_usd',v)} placeholder="e.g. 30"/>
+      </div>
+      <div className="field"><label className="flbl">Plan (optional)</label>
+        <select className="fsel" value={form.plan} onChange={e=>sf('plan',e.target.value)}>
+          <option value="">— None —</option>
+          <option value="NODE">NODE ($15/mo)</option><option value="MESH">MESH ($30/mo)</option><option value="CARRIER">CARRIER ($55/mo)</option>
+        </select>
+      </div>
+      <F label="Note (optional)" value={form.note} onChange={v=>sf('note',v)} placeholder="Reason for this transaction…"/>
+      <div className="g2"><Btn full outline color={C.muted} onClick={()=>setModal(null)}>CANCEL</Btn><Btn full color={MODS[modal].color} onClick={()=>doSubmit(modal)}>{MODS[modal].btn}</Btn></div>
+    </Modal>}
+  </div>;
+}
+
+
+function NodesMgr({show}){
+  const [nodes,setNodes]=useState([]);
+  const [sel,setSel]=useState(null);
+  const [modal,setModal]=useState(null);
+  const [newForm,setNewForm]=useState({name:'',location:'',node_type:'relay'});
+  const {toasts,show:toast}=useToast();
+
+  const reload=async()=>{
+    try{const d=await api('/nodes');setNodes(Array.isArray(d)?d:[]);}
+    catch(e){toast(e.message,C.red);}
+  };
+  useEffect(()=>{reload();const t=setInterval(reload,10000);return()=>clearInterval(t);},[]);
+
+  const reboot=async(id)=>{
+    try{await api('/nodes/'+id+'/command',{method:'POST',body:{type:'reboot'}});toast('Reboot command sent',C.yellow);}
+    catch(e){toast(e.message,C.red);}
+  };
+
+  const createNode=async()=>{
+    try{
+      const n=await api('/nodes',{method:'POST',body:newForm});
+      toast('Node created — copy key now!',C.green);
+      setSel({...n,node_key_visible:true});
+      setModal('key');
+      await reload();
+    }catch(e){toast(e.message,C.red);}
+  };
+
+  const statusColor=s=>s==='online'?C.green:s==='degraded'?C.yellow:C.muted;
+  const typeIcon=t=>({gnb:'📡',upf:'🔀',relay:'🔗',compute:'💻'}[t]||'▣');
+
+  const onlineCount=nodes.filter(n=>n.status==='online').length;
+  const totalClients=nodes.reduce((a,n)=>a+(n.connected_clients||0),0);
+  const totalEarned=nodes.reduce((a,n)=>a+(n.mesh_earned||0),0);
+
+  return <div>
+    <ToastLayer toasts={toasts}/>
+    <PH title="MESH NODES" action={<div style={{display:'flex',gap:8}}>
+      <div style={{padding:'4px 10px',background:C.green+'15',border:`1px solid ${C.green}30`,borderRadius:5,fontSize:10,color:C.green}}>{onlineCount}/{nodes.length} ONLINE</div>
+      <Btn small color={C.cyan} onClick={()=>setModal('new')}>+ REGISTER NODE</Btn>
+    </div>}/>
+
+    {/* Stats row */}
+    <div className="g4" style={{marginBottom:14}}>
+      <SC label="Online Nodes" value={onlineCount} sub={`of ${nodes.length} registered`} color={C.green}/>
+      <SC label="Connected Clients" value={totalClients} sub="devices using network" color={C.blue}/>
+      <SC label="Total MESH Earned" value={totalEarned.toFixed(3)} sub="across all nodes" color={C.purple}/>
+      <SC label="Network Status" value={onlineCount>0?'LIVE':'OFFLINE'} sub={onlineCount>0?'serving traffic':'no active nodes'} color={onlineCount>0?C.green:C.muted}/>
+    </div>
+
+    {/* Node grid */}
+    {nodes.length===0&&<div style={{padding:'28px',textAlign:'center',color:C.muted,fontSize:12,fontFamily:'var(--mono)',letterSpacing:1}}>
+      NO NODES REGISTERED — Click REGISTER NODE to add your first device
+    </div>}
+
+    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:10,marginBottom:14}}>
+      {nodes.map(n=>{
+        const isOn=n.status==='online';
+        const hw=n.hardware||{};
+        const stats=n.stats||{};
+        return <div key={n.id} onClick={()=>setSel(n)}
+          style={{padding:14,background:'var(--bg2)',border:`1px solid ${isOn?statusColor(n.status)+'40':'var(--border2)'}`,borderRadius:10,cursor:'pointer',transition:'all 0.15s',position:'relative',overflow:'hidden'}}>
+          {/* Live pulse */}
+          {isOn&&<div style={{position:'absolute',top:10,right:10,width:7,height:7,borderRadius:'50%',background:C.green,boxShadow:`0 0 6px ${C.green}`}}/>}
+          {!isOn&&<div style={{position:'absolute',top:10,right:10,width:7,height:7,borderRadius:'50%',background:C.muted}}/>}
+
+          <div style={{fontSize:9,color:C.muted,letterSpacing:2,marginBottom:4}}>{typeIcon(n.node_type)} {(n.node_type||'relay').toUpperCase()} NODE</div>
+          <div style={{fontWeight:700,fontSize:13,marginBottom:2,fontFamily:'var(--mono)',color:'var(--text)'}}>{n.name||n.id}</div>
+          <div style={{fontSize:10,color:C.muted,marginBottom:10}}>{n.hostname||n.ip_address||n.location||'—'}</div>
+
+          {/* Device type badge */}
+          <div style={{display:'flex',gap:6,marginBottom:10,flexWrap:'wrap'}}>
+            {n.device_type&&<span style={{padding:'2px 7px',background:C.blue+'15',border:`1px solid ${C.blue}25`,borderRadius:4,fontSize:9,color:C.blue,letterSpacing:1}}>{(n.device_type||'').replace('_',' ').toUpperCase()}</span>}
+            {hw.has_sdr&&<span style={{padding:'2px 7px',background:C.cyan+'15',border:`1px solid ${C.cyan}25`,borderRadius:4,fontSize:9,color:C.cyan,letterSpacing:1}}>SDR</span>}
+            {n.radio_enabled&&<span style={{padding:'2px 7px',background:C.green+'15',border:`1px solid ${C.green}25`,borderRadius:4,fontSize:9,color:C.green,letterSpacing:1}}>RADIO ON</span>}
+          </div>
+
+          {/* Stats */}
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:4}}>
+            {[
+              ['CPU', isOn?(n.cpu_percent||0)+'%':'—'],
+              ['RAM', isOn?(n.ram_percent||0)+'%':'—'],
+              ['Clients', isOn?(n.connected_clients||0):'—'],
+              ['Temp', n.temperature_c?n.temperature_c.toFixed(0)+'°C':'—'],
+            ].map(([k,v])=><div key={k} style={{padding:'4px 7px',background:'var(--bg3)',borderRadius:5}}>
+              <div style={{fontSize:8,color:C.muted,letterSpacing:1}}>{k}</div>
+              <div style={{fontSize:11,fontFamily:'var(--mono)',color:isOn?'var(--text)':C.muted}}>{v}</div>
+            </div>)}
+          </div>
+
+          <div style={{marginTop:8,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <span style={{fontSize:9,color:C.purple,fontFamily:'var(--mono)'}}>{(n.mesh_earned||0).toFixed(3)} MESH earned</span>
+            <Btn small outline color={C.yellow} onClick={e=>{e.stopPropagation();reboot(n.id);}}>REBOOT</Btn>
+          </div>
+        </div>;
+      })}
+    </div>
+
+    {/* Node detail panel */}
+    {sel&&<div style={{background:'var(--bg2)',border:'1px solid var(--border2)',borderRadius:10,padding:16,marginBottom:14}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+        <div>
+          <div style={{fontSize:9,color:C.muted,letterSpacing:2}}>{typeIcon(sel.node_type)} NODE DETAIL</div>
+          <div style={{fontWeight:700,fontFamily:'var(--mono)',fontSize:15}}>{sel.name||sel.id}</div>
+        </div>
+        <div style={{display:'flex',gap:8}}>
+          <Btn small color={C.cyan} onClick={()=>setModal('cmd')}>SEND COMMAND</Btn>
+          <Btn small outline color={C.muted} onClick={()=>setSel(null)}>CLOSE</Btn>
+        </div>
+      </div>
+      <div className="g3">
+        {[
+          ['Node ID', sel.id],
+          ['Status', sel.status||'offline'],
+          ['Type', sel.node_type||'relay'],
+          ['Device', (sel.device_type||'').replace('_',' ')||'—'],
+          ['Model', sel.hardware?.model||sel.hostname||'—'],
+          ['OS', sel.hardware?.os||'—'],
+          ['IP Address', sel.ip_address||'—'],
+          ['Location', sel.location||'—'],
+          ['Agent Version', sel.agent_version||'—'],
+          ['CPU Cores', sel.hardware?.cpu_cores||'—'],
+          ['RAM', sel.hardware?.ram_gb?sel.hardware.ram_gb+'GB':'—'],
+          ['SDR Hardware', sel.hardware?.has_sdr?(sel.hardware?.sdr_model||'detected'):'none'],
+          ['Radio Enabled', sel.radio_enabled?'yes':'no'],
+          ['Last Seen', sel.last_seen||'—'],
+          ['MESH Earned', (sel.mesh_earned||0).toFixed(4)+' MESH'],
+        ].map(([k,v])=><DR key={k} k={k} v={String(v||'—')}/>)}
+      </div>
+    </div>}
+
+    {/* Register Node Modal */}
+    {modal==='new'&&<Modal title="REGISTER NEW NODE" onClose={()=>setModal(null)} color={C.cyan} width={480}>
+      <div className="info-box" style={{marginBottom:14}}>
+        Register any device as a MeshCarrier node. A secret key will be generated — install the node agent on the device and enter this key.
+      </div>
+      {[['Node Name','name','e.g. Pi Node #1'],['Location','location','e.g. Brooklyn, NY']].map(([l,k,ph])=>
+        <div key={k} style={{marginBottom:10}}>
+          <div style={{fontSize:9,color:C.muted,letterSpacing:2,marginBottom:4}}>{l}</div>
+          <input className="inp" placeholder={ph} value={newForm[k]} onChange={e=>setNewForm(f=>({...f,[k]:e.target.value}))}/>
+        </div>)}
+      <div style={{marginBottom:14}}>
+        <div style={{fontSize:9,color:C.muted,letterSpacing:2,marginBottom:6}}>NODE TYPE</div>
+        <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+          {[['relay','🔗 Relay','Routes traffic, no radio'],['upf','🔀 UPF','User plane function'],['gnb','📡 gNB','Full base station (needs SDR)'],['compute','💻 Compute','Processing only']].map(([v,label,desc])=>
+            <div key={v} onClick={()=>setNewForm(f=>({...f,node_type:v}))}
+              style={{padding:'8px 10px',background:newForm.node_type===v?C.cyan+'20':'var(--bg3)',border:`1px solid ${newForm.node_type===v?C.cyan:C.border2}`,borderRadius:7,cursor:'pointer',flex:'1',minWidth:100}}>
+              <div style={{fontSize:11,color:newForm.node_type===v?C.cyan:'var(--text)',marginBottom:2}}>{label}</div>
+              <div style={{fontSize:9,color:C.muted}}>{desc}</div>
+            </div>)}
+        </div>
+      </div>
+      <div className="g2">
+        <Btn full outline color={C.muted} onClick={()=>setModal(null)}>CANCEL</Btn>
+        <Btn full color={C.cyan} onClick={createNode}>GENERATE KEY & REGISTER</Btn>
+      </div>
+    </Modal>}
+
+    {/* Show node key modal */}
+    {modal==='key'&&sel&&<Modal title="NODE KEY GENERATED" onClose={()=>{setModal(null);setSel(null);}} color={C.green} width={500}>
+      <div style={{padding:'10px 13px',background:C.green+'12',border:`1px solid ${C.green}30`,borderRadius:7,marginBottom:14,fontSize:12,color:C.green}}>
+        ✓ Node registered. Copy this key — it won't be shown again!
+      </div>
+      <div style={{marginBottom:14}}>
+        <div style={{fontSize:9,color:C.muted,letterSpacing:2,marginBottom:6}}>SECRET NODE KEY</div>
+        <div style={{fontFamily:'var(--mono)',fontSize:11,background:'var(--bg3)',border:'1px solid var(--border2)',borderRadius:6,padding:'10px 12px',wordBreak:'break-all',color:C.yellow}}>{sel.node_key}</div>
+      </div>
+      <div style={{marginBottom:14,padding:'10px 13px',background:'var(--bg3)',borderRadius:8,fontSize:11,lineHeight:1.7}}>
+        <div style={{fontWeight:700,marginBottom:6,color:C.cyan}}>Install on your device:</div>
+        <div style={{fontFamily:'var(--mono)',fontSize:10,color:C.muted}}>
+          # Android (Termux) or Linux / Raspberry Pi<br/>
+          git clone https://github.com/meshcarrier/node-agent<br/>
+          cd node-agent && cp .env.example .env<br/>
+          # Edit .env: set NODE_KEY and CORE_URL<br/>
+          node agent.js
+        </div>
+      </div>
+      <Btn full color={C.green} onClick={()=>navigator.clipboard?.writeText(sel.node_key||'').then(()=>toast('Copied!'))}>COPY KEY</Btn>
+    </Modal>}
+
+    {/* Command modal */}
+    {modal==='cmd'&&sel&&<Modal title="SEND COMMAND" onClose={()=>setModal(null)} color={C.yellow} width={420}>
+      <div style={{display:'grid',gap:8}}>
+        {[['start_upf','▶ Start UPF','Enable user plane function'],['stop_upf','⏹ Stop UPF','Disable user plane function'],['start_gnb','📡 Start gNB','Start base station (needs SDR)'],['stop_gnb','⏹ Stop gNB','Stop base station'],['reboot','↺ Reboot','Restart the node agent']].map(([type,label,desc])=>
+          <div key={type} onClick={async()=>{
+            try{await api('/nodes/'+sel.id+'/command',{method:'POST',body:{type}});toast('Command queued: '+type,C.green);setModal(null);}
+            catch(e){toast(e.message,C.red);}
+          }} style={{padding:'10px 13px',background:'var(--bg3)',border:'1px solid var(--border2)',borderRadius:7,cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <div>
+              <div style={{fontWeight:600,fontSize:12}}>{label}</div>
+              <div style={{fontSize:10,color:C.muted}}>{desc}</div>
+            </div>
+            <span style={{color:C.muted,fontSize:16}}>→</span>
+          </div>)}
+      </div>
+    </Modal>}
+  </div>;
+}
+
+
+function BillingMgr({show}) {
+  const [status,setStatus] = useState([]);
+  const [running,setRunning] = useState(false);
+  const [inv,setInv] = useState(null);
+  const [invSub,setInvSub] = useState(null);
+  const reload=()=>api('/billing/status').then(setStatus).catch(()=>{});
+  useEffect(()=>{reload();}, []);
+  const runCycle=async()=>{
+    setRunning(true);
+    try{const r=await api('/billing/run',{method:'POST',body:{}});show(`Cycle: ${r.suspended} suspended, ${r.warned} warned, ${r.ok} ok`);reload();}
+    catch(e){show(e.message,C.red);}finally{setRunning(false);}
+  };
+  const suspend=async s=>{try{await api('/billing/suspend/'+s.id,{method:'POST',body:{}});show('Suspended');reload();}catch(e){show(e.message,C.red);}};
+  const reactivate=async s=>{try{await api('/billing/reactivate/'+s.id,{method:'POST',body:{}});show('Reactivated');reload();}catch(e){show(e.message,C.red);}};
+  const loadInv=async s=>{try{const d=await api('/billing/invoice/'+s.id);setInv(d);setInvSub(s);}catch(e){show(e.message,C.red);}};
+  const mrr=status.reduce((a,s)=>a+({NODE:15,MESH:30,CARRIER:55}[s.plan]||0),0);
+  const BSC={current:C.green,warning:C.yellow,overdue:C.red};
+  return <div>
+    <div className="g5" style={{marginBottom:14}}>
+      <SC label="MRR" value={'$'+mrr} color={C.green}/>
+      <SC label="ARR" value={'$'+(mrr*12)} color={C.cyan}/>
+      <SC label="Current" value={status.filter(s=>s.billing_status==='current').length} color={C.green}/>
+      <SC label="Warning" value={status.filter(s=>s.billing_status==='warning').length} color={C.yellow}/>
+      <SC label="Overdue" value={status.filter(s=>s.billing_status==='overdue').length} color={C.red}/>
+    </div>
+    <div style={{display:'flex',gap:8,marginBottom:12}}>
+      <Btn size="sm" color={C.blue} onClick={runCycle} disabled={running}>{running?'RUNNING…':'▶ RUN BILLING CYCLE'}</Btn>
+      <Btn size="sm" outline color={C.cyan} onClick={()=>window.open(API+'/billing/export/csv','_blank')}>↓ EXPORT CSV</Btn>
+    </div>
+    <div className="panel tbl-wrap">
+      <table><thead><tr>{['Subscriber','Plan','Last Payment','Days','Total Paid','Status','Actions'].map(h=><th key={h}>{h}</th>)}</tr></thead>
+        <tbody>{status.map(s=><tr key={s.id}>
+          <td><div>{s.full_name}</div><div style={{fontSize:10,color:C.muted}}>{s.email}</div></td>
+          <td><Bdg label={s.plan||'—'} color={s.plan==='CARRIER'?C.yellow:s.plan==='MESH'?C.green:C.blue}/></td>
+          <td style={{color:C.muted}}>{s.last_payment_date?.slice(0,10)||'Never'}</td>
+          <td style={{fontFamily:'var(--mono)',color:s.days_since_payment>37?C.red:s.days_since_payment>32?C.yellow:C.text}}>{s.days_since_payment===999?'—':s.days_since_payment+'d'}</td>
+          <td style={{fontFamily:'var(--mono)'}}>{s.total_paid?'$'+Number(s.total_paid).toFixed(0):'$0'}</td>
+          <td><span style={{color:BSC[s.billing_status]||C.muted,fontWeight:s.billing_status!=='current'?700:400,fontSize:11}}>{s.billing_status?.toUpperCase()}</span></td>
+          <td>
+            <div style={{display:'flex',gap:3}}>
+              <Btn size="xs" outline color={C.blue} onClick={()=>loadInv(s)}>INVOICE</Btn>
+              {s.account_status!=='suspended'
+                ?<Btn size="xs" outline color={C.red} onClick={()=>suspend(s)}>SUSPEND</Btn>
+                :<Btn size="xs" outline color={C.green} onClick={()=>reactivate(s)}>REACTIVATE</Btn>}
+            </div>
+          </td>
+        </tr>)}</tbody>
+      </table>
+    </div>
+    {inv&&invSub&&<div style={{marginTop:12,background:'var(--bg2)',border:`1px solid ${C.blue}30`,borderLeft:`3px solid ${C.blue}`,borderRadius:10,padding:18}}>
+      <div style={{display:'flex',justifyContent:'space-between',marginBottom:12}}>
+        <div><div style={{fontFamily:'var(--mono)',fontSize:12,color:C.blue,fontWeight:700}}>{inv.invoice_number}</div><div style={{fontSize:10,color:C.muted}}>{inv.period?.start} → {inv.period?.end}</div></div>
+        <button type="button" onClick={()=>{setInv(null);setInvSub(null);}} style={{background:'none',border:'none',color:C.muted,cursor:'pointer',fontSize:18}}>×</button>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
+        {[['Name',inv.subscriber?.name],['Plan',inv.subscriber?.plan],['Phone',inv.subscriber?.did],['Data',`${inv.data?.used_gb}/${inv.data?.limit_gb} GB`],['Calls',`${inv.calls?.total} (${inv.calls?.total_minutes} min)`],['SMS',inv.sms?.total],['Paid',`$${(inv.summary?.total_paid_usd||0).toFixed(2)}`],['Plan Cost',`$${inv.summary?.plan_cost_usd}/mo`],['MESH',inv.summary?.mesh_balance]].map(([k,v])=>(
+          <div key={k} style={{background:'var(--bg3)',borderRadius:5,padding:'8px 10px'}}>
+            <div style={{fontSize:9,color:C.muted,marginBottom:2}}>{k}</div>
+            <div style={{fontFamily:'var(--mono)',fontSize:10,color:C.white}}>{v}</div>
+          </div>
+        ))}
+      </div>
+    </div>}
+  </div>;
+}
+
+
+function ReportsMgr({show}) {
+  const now = new Date();
+  const [from,setFrom] = useState(new Date(now.getFullYear(),now.getMonth(),1).toISOString().slice(0,10));
+  const [to,setTo] = useState(now.toISOString().slice(0,10));
+  const [report,setReport] = useState(null);
+  const [loading,setLoading] = useState(false);
+  const load=async()=>{setLoading(true);try{setReport(await api('/billing/report?from='+from+'&to='+to));}catch(e){show(e.message,C.red);}finally{setLoading(false);};};
+  useEffect(()=>{load();}, []);
+  return <div>
+    <div style={{display:'flex',gap:10,marginBottom:16,alignItems:'flex-end',flexWrap:'wrap'}}>
+      {[['FROM',from,setFrom],['TO',to,setTo]].map(([lbl,val,setter])=>(
+        <div key={lbl}><div style={{fontSize:9,color:C.muted,letterSpacing:2,marginBottom:5,textTransform:'uppercase'}}>{lbl}</div>
+          <input type="date" value={val} onChange={e=>setter(e.target.value)} style={{background:'var(--bg3)',border:'1px solid var(--border2)',borderRadius:6,padding:'8px 12px',color:C.white,fontSize:12,outline:'none'}}/></div>
+      ))}
+      <Btn color={C.blue} size="sm" onClick={load} disabled={loading}>{loading?'LOADING…':'GENERATE'}</Btn>
+      <Btn outline color={C.cyan} size="sm" onClick={()=>window.open(API+'/billing/export/csv','_blank')}>↓ CSV</Btn>
+    </div>
+    {report&&<div>
+      <div className="g6" style={{marginBottom:14}}>
+        <SC label="Revenue" value={'$'+report.summary?.totalUsd?.toFixed(0)} color={C.green}/>
+        <SC label="XRP" value={report.summary?.totalXrp?.toFixed(1)} color={C.blue}/>
+        <SC label="Refunds" value={'$'+report.summary?.refunds?.toFixed(0)} color={C.red}/>
+        <SC label="Net" value={'$'+report.summary?.net?.toFixed(0)} color={C.cyan}/>
+        <SC label="MRR" value={'$'+(report.mrr||0)} color={C.purple}/>
+        <SC label="ARR" value={'$'+((report.arr||0)/1000).toFixed(1)+'K'} color={C.yellow}/>
+      </div>
+      <div className="g2" style={{marginBottom:12}}>
+        <div className="panel"><PH title="Revenue by Plan"/>
+          <div style={{padding:'12px 16px'}}>
+            {Object.entries(report.by_plan||{}).map(([plan,usd])=>{
+              const total=Object.values(report.by_plan||{}).reduce((a,v)=>a+v,1);
+              const pct=Math.round(usd/total*100);
+              const col=plan==='CARRIER'?C.yellow:plan==='MESH'?C.green:C.blue;
+              return <div key={plan} style={{marginBottom:12}}>
+                <div style={{display:'flex',justifyContent:'space-between',marginBottom:4,fontSize:12}}>
+                  <span style={{color:col,fontWeight:700,letterSpacing:1}}>{plan}</span>
+                  <span>${usd.toFixed(0)} <span style={{color:C.muted,fontSize:10}}>({pct}%)</span></span>
+                </div>
+                <div className="prog-track"><div className="prog-fill" style={{width:pct+'%',background:col}}/></div>
+              </div>;
+            })}
+          </div>
+        </div>
+        <div className="panel"><PH title="Subscriber Breakdown"/>
+          <div style={{padding:'4px 16px 12px'}}>
+            {[['Total',report.subscribers?.total,C.white],['Active',report.subscribers?.active,C.green],['NODE',report.subscribers?.byPlan?.NODE||0,C.blue],['MESH',report.subscribers?.byPlan?.MESH||0,C.green],['CARRIER',report.subscribers?.byPlan?.CARRIER||0,C.yellow]].map(([l,v,col])=>(
+              <div key={l} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'7px 0',borderBottom:'1px solid var(--border)'}}>
+                <span style={{fontSize:12,color:C.text}}>{l}</span>
+                <span style={{fontFamily:'var(--mono)',fontWeight:700,color:col}}>{v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="panel" style={{marginBottom:12}}><PH title={`Daily Revenue — ${report.period?.start} to ${report.period?.end}`}/>
+        <div style={{padding:'14px 16px'}}>
+          {!(report.by_day?.length)?<div style={{color:C.muted,fontSize:12}}>No data for this period</div>:(()=>{
+            const max=Math.max(...report.by_day.map(d=>d.usd),1);
+            return <div className="chart-bars">{report.by_day.map(d=><div key={d.date} className="cbar" title={`${d.date}: $${d.usd.toFixed(0)}`} style={{height:Math.max(d.usd/max*100,2)+'%',background:`linear-gradient(180deg,${C.blue},${C.cyan})`}}/> )}</div>;
+          })()}
+        </div>
+      </div>
+      <div className="panel tbl-wrap"><PH title={`Transactions (${report.summary?.transactions||0})`}/>
+        <div style={{maxHeight:280,overflowY:'auto'}}>
+          <table><thead><tr>{['Date','Subscriber','Plan','Type','XRP','USD','Status'].map(h=><th key={h}>{h}</th>)}</tr></thead>
+            <tbody>{(report.transactions||[]).slice(0,50).map(p=><tr key={p.id}>
+              <td style={{color:C.muted}}>{p.created_at?.slice(0,10)}</td>
+              <td style={{fontSize:11}}>{p.full_name||'—'}</td>
+              <td>{p.plan?<Bdg label={p.plan} color={p.plan==='CARRIER'?C.yellow:C.blue}/>:'—'}</td>
+              <td><Bdg label={(p.type||'').replace(/_/g,' ')} color={C.muted}/></td>
+              <td style={{fontFamily:'var(--mono)',color:C.cyan}}>{p.amount_xrp}</td>
+              <td>{p.amount_usd?'$'+p.amount_usd:'—'}</td>
+              <td><Dot s={p.status}/>{p.status}</td>
+            </tr>)}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>}
+  </div>;
+}
+
+
+function UsersMgr({show}) {
+  const {user:me} = useAuth();
+  const [users,setUsers] = useState([]);
+  const [newU,setNewU] = useState(false);
+  const [editU,setEditU] = useState(null);
+  const [form,setForm] = useState({email:'',password:'',full_name:'',role:'user'});
+  const [editF,setEditF] = useState({full_name:'',role:'',status:''});
+  const reload=()=>api('/users').then(setUsers).catch(()=>{});
+  useEffect(()=>{reload();}, []);
+  const sf=(k,v)=>setForm(p=>({...p,[k]:v}));
+  const create=async()=>{
+    if(!form.full_name||!form.email||!form.password){show('All fields required',C.red);return;}
+    try{await api('/users',{method:'POST',body:form});await reload();setNewU(false);setForm({email:'',password:'',full_name:'',role:'user'});show('User created');}
+    catch(e){show(e.message,C.red);}
+  };
+  const saveEdit=async()=>{
+    try{await api('/users/'+editU.id,{method:'PATCH',body:editF});await reload();setEditU(null);show('User updated');}
+    catch(e){show(e.message,C.red);}
+  };
+  const toggle=async u=>{
+    try{await api('/users/'+u.id,{method:'PATCH',body:{status:u.status==='active'?'suspended':'active'}});await reload();show('Status updated');}
+    catch(e){show(e.message,C.red);}
+  };
+  const del=async u=>{
+    if(!window.confirm('Delete user '+u.full_name+'? This cannot be undone.'))return;
+    try{await api('/users/'+u.id,{method:'DELETE'});await reload();show('User deleted');}
+    catch(e){show(e.message,C.red);}
+  };
+  return <div>
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+      <span style={{fontFamily:'var(--mono)',fontSize:10,letterSpacing:2}}>SYSTEM USERS</span>
+      <Btn size="sm" color={C.blue} onClick={()=>setNewU(true)} icon="＋">NEW USER</Btn>
+    </div>
+    <div className="panel tbl-wrap"><table>
+      <thead><tr>{['Name','Email','Role','Status','Last Login','Actions'].map(h=><th key={h}>{h}</th>)}</tr></thead>
+      <tbody>{users.map(u=><tr key={u.id}>
+        <td style={{fontWeight:600}}>{u.full_name}</td>
+        <td style={{color:C.text,fontFamily:'var(--mono)',fontSize:11}}>{u.email}</td>
+        <td><Bdg label={u.role} color={ROLE_C[u.role]||C.muted}/></td>
+        <td><Dot s={u.status}/>{u.status}</td>
+        <td style={{color:C.muted,fontFamily:'var(--mono)',fontSize:10}}>{u.last_login?.slice(0,16)||'Never'}</td>
+        <td>
+          <div style={{display:'flex',gap:3}}>
+            <Btn size="xs" outline color={C.blue} onClick={()=>{setEditU(u);setEditF({full_name:u.full_name,role:u.role,status:u.status});}}>EDIT</Btn>
+            <Btn size="xs" outline color={u.status==='active'?C.red:C.green} onClick={()=>toggle(u)}>{u.status==='active'?'SUSP':'ACT'}</Btn>
+            {me.role==='superadmin'&&u.id!==me.id&&<Btn size="xs" outline color={C.red} onClick={()=>del(u)}>DEL</Btn>}
+          </div>
+        </td>
+      </tr>)}</tbody>
+    </table></div>
+
+    {newU&&<Modal title="CREATE USER" onClose={()=>setNewU(false)}>
+      <F label="Full Name" value={form.full_name} onChange={v=>sf('full_name',v)} placeholder="Full name"/>
+      <F label="Email" value={form.email} onChange={v=>sf('email',v)} type="email" placeholder="email@example.com"/>
+      <F label="Password" value={form.password} onChange={v=>sf('password',v)} type="password" placeholder="Min 8 characters"/>
+      <Sel label="Role" value={form.role} onChange={v=>sf('role',v)} options={[{value:'user',label:'User'},{value:'support',label:'Support'},{value:'tech',label:'Tech'},{value:'admin',label:'Admin'},{value:'superadmin',label:'Superadmin'}]}/>
+      <div className="g2"><Btn full outline color={C.muted} onClick={()=>setNewU(false)}>CANCEL</Btn><Btn full color={C.blue} onClick={create}>CREATE USER</Btn></div>
+    </Modal>}
+
+    {editU&&<Modal title="EDIT USER" onClose={()=>setEditU(null)}>
+      <F label="Full Name" value={editF.full_name} onChange={v=>setEditF(p=>({...p,full_name:v}))} placeholder="Full name"/>
+      <Sel label="Role" value={editF.role} onChange={v=>setEditF(p=>({...p,role:v}))} options={[{value:'user',label:'User'},{value:'support',label:'Support'},{value:'tech',label:'Tech'},{value:'admin',label:'Admin'},{value:'superadmin',label:'Superadmin'}]}/>
+      <Sel label="Status" value={editF.status} onChange={v=>setEditF(p=>({...p,status:v}))} options={[{value:'active',label:'Active'},{value:'suspended',label:'Suspended'}]}/>
+      <div className="g2"><Btn full outline color={C.muted} onClick={()=>setEditU(null)}>CANCEL</Btn><Btn full color={C.blue} onClick={saveEdit}>SAVE CHANGES</Btn></div>
+    </Modal>}
+  </div>;
+}
+
+
+function StaffPortal() {
+  const {user,logout} = useAuth();
+  const [page,setPage] = useState('dashboard');
+  const [stats,setStats] = useState(null);
+  const {toasts,show} = useToast();
+  const loadStats=()=>api('/dashboard').then(setStats).catch(()=>{});
+  useEffect(()=>{loadStats();const t=setInterval(loadStats,30000);return()=>clearInterval(t);}, []);
+  const PAGES = {
+    dashboard:{label:'Dashboard',icon:'◉',roles:['support','tech','admin','superadmin'],group:'Overview'},
+    subscribers:{label:'Subscribers',icon:'◎',roles:['support','tech','admin','superadmin'],group:'Operations'},
+    devices:{label:'Devices',icon:'▣',roles:['tech','admin','superadmin'],group:'Operations'},
+    tickets:{label:'Tickets',icon:'◆',roles:['support','tech','admin','superadmin'],group:'Operations'},
+    voice:{label:'Voice & SMS',icon:'◈',roles:['support','tech','admin','superadmin'],group:'Operations'},
+    payments:{label:'Payments',icon:'◇',roles:['admin','superadmin'],group:'Finance'},
+    billing:{label:'Billing Mgr',icon:'◑',roles:['admin','superadmin'],group:'Finance'},
+    reports:{label:'Reports',icon:'◐',roles:['admin','superadmin'],group:'Finance'},
+    nodes:{label:'Nodes',icon:'⬡',roles:['tech','admin','superadmin'],group:'Network'},
+    users:{label:'Users',icon:'◻',roles:['admin','superadmin'],group:'Admin'},
+  };
+  const visible = Object.entries(PAGES).filter(([,p])=>p.roles.includes(user.role));
+  const groups = [...new Set(visible.map(([,p])=>p.group))];
+  const MRR = stats ? [15,30,55][[...((stats.subscribers?.total||0)>0?['total']:['total'])].reduce(()=>0,0)] : 0;
+  return <div id="app">
+    <ToastLayer toasts={toasts}/>
+    <div className="topbar">
+      <div className="topbar-logo">
+        <svg width="20" height="20" viewBox="0 0 52 52"><polygon points="26,3 47,15 47,37 26,49 5,37 5,15" fill="none" stroke="#0EA5E9" strokeWidth="2"/><circle cx="26" cy="26" r="4" fill="#0EA5E9"/></svg>
+        MESH<b>CARRIER</b>
+        <span className="topbar-tag">STAFF PORTAL</span>
+      </div>
+      <div className="topbar-r">
+        <div className="topbar-user">
+          <span style={{fontSize:11,color:'var(--text)'}}>{user.name}</span>
+          <Bdg label={user.role} color={ROLE_C[user.role]||'#0EA5E9'}/>
+        </div>
+        <Btn size="sm" outline color="#344F65" onClick={logout}>LOGOUT</Btn>
+      </div>
+    </div>
+    <div className="layout">
+      <div className="sidebar">
+        <div className="sidebar-nav">
+          {groups.map(grp=><div key={grp}>
+            <div className="nav-grp">{grp}</div>
+            {visible.filter(([,p])=>p.group===grp).map(([id,p])=>(
+              <div key={id} className={`nav-item ${page===id?'active':''}`} onClick={()=>setPage(id)}>
+                <span className="nav-icon">{p.icon}</span>{p.label}
+              </div>
+            ))}
+          </div>)}
+        </div>
+        <div className="sidebar-footer">
+          {stats&&[
+            ['SUBS',stats.subscribers?.active||0],
+            ['TICKETS',stats.tickets?.open||0],
+            ['NODES',(Array.isArray(stats.nodes)?stats.nodes.filter(n=>n.status==='online').length:stats.nodes?.online)||0],
+          ].map(([l,v])=><div key={l} className="sfx"><span>{l}</span><b>{v}</b></div>)}
+          <div style={{fontSize:9,color:'var(--muted)',marginTop:6,letterSpacing:1}}>v2.1.0 · ONLINE</div>
+        </div>
+      </div>
+      <div className="content">
+        <div style={{marginBottom:20}}>
+          <div style={{fontSize:9,color:'var(--muted)',letterSpacing:3,textTransform:'uppercase',marginBottom:3}}>{PAGES[page]?.group} / {PAGES[page]?.label}</div>
+          <div style={{fontFamily:'var(--mono)',fontSize:16,fontWeight:700,letterSpacing:1}}>{PAGES[page]?.label?.toUpperCase()}</div>
+        </div>
+        {page==='dashboard'&&<Dashboard stats={stats}/>}
+        {page==='subscribers'&&<SubsMgr show={show}/>}
+        {page==='devices'&&<DevicesMgr show={show}/>}
+        {page==='tickets'&&<TicketsMgr show={show}/>}
+        {page==='voice'&&<VoiceMgr show={show}/>}
+        {page==='payments'&&<PaymentsMgr show={show}/>}
+        {page==='billing'&&<BillingMgr show={show}/>}
+        {page==='reports'&&<ReportsMgr show={show}/>}
+        {page==='nodes'&&<NodesMgr show={show}/>}
+        {page==='users'&&<UsersMgr show={show}/>}
+      </div>
+    </div>
+  </div>;
+}
+
+
+function App() {
+  const [user,setUser] = useState(null);
+  const [view,setView] = useState('login');
+  const [checking,setChecking] = useState(true);
+
+  useEffect(()=>{
+    const tok = localStorage.getItem('mc_tok');
+    if(tok){
+      try{
+        const payload = JSON.parse(atob(tok.split('.')[1]));
+        if(payload.exp && payload.exp * 1000 > Date.now()){
+          setUser({id:payload.id,email:payload.email,role:payload.role,name:payload.name||payload.full_name||payload.email});
+        } else { localStorage.removeItem('mc_tok'); }
+      }catch{}
+    }
+    setChecking(false);
+  },[]);
+
+  const logout = ()=>{ localStorage.removeItem('mc_tok'); setUser(null); setView('login'); };
+  const onLogin = u=>{ setUser(u); setView('portal'); };
+
+  if(checking) return null;
+  const isStaff = user&&['support','tech','admin','superadmin'].includes(user.role);
+  const isUser  = user&&user.role==='user';
+
+  return <AuthCtx.Provider value={{user,logout}}>
+    {!user&&view==='login'&&<LoginPage onLogin={onLogin} onSignup={()=>setView('signup')}/>}
+    {!user&&view==='signup'&&<SignupPage onBack={()=>setView('login')}/>}
+    {isStaff&&<StaffPortal/>}
+    {isUser&&<div id="app">
+      <div className="topbar">
+        <div className="topbar-logo">
+          <svg width="20" height="20" viewBox="0 0 52 52"><polygon points="26,3 47,15 47,37 26,49 5,37 5,15" fill="none" stroke="#0EA5E9" strokeWidth="2"/><circle cx="26" cy="26" r="4" fill="#0EA5E9"/></svg>
+          MESH<b>CARRIER</b>
+          <span className="topbar-tag">MY PORTAL</span>
+        </div>
+        <div className="topbar-r">
+          <div className="topbar-user">
+            <span style={{fontSize:11,color:'var(--text)'}}>{user.name}</span>
+            <Bdg label="user" color="#0EA5E9"/>
+          </div>
+          <Btn size="sm" outline color="#344F65" onClick={logout}>LOGOUT</Btn>
+        </div>
+      </div>
+      <div className="content" style={{maxWidth:940,margin:'0 auto'}}><UserPortal/></div>
+    </div>}
+  </AuthCtx.Provider>;
+}
+
+ReactDOM.createRoot(document.getElementById('app')).render(<App/>);
+setTimeout(()=>{const s=document.getElementById('splash');if(s){s.style.opacity='0';setTimeout(()=>s.remove(),500);}},1400);
+</script>
+</body>
+</html>

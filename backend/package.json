@@ -1,0 +1,22 @@
+{
+  "name": "meshcarrier-backend",
+  "version": "2.2.0",
+  "description": "MeshCarrier MVNO Backend — PostgreSQL",
+  "main": "server.js",
+  "engines": { "node": ">=18.0.0" },
+  "scripts": {
+    "start": "node -r dotenv/config server.js",
+    "init-db": "node -r dotenv/config db-init.js",
+    "seed": "node -r dotenv/config reseed-live.js",
+    "dev": "node -r dotenv/config server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.3",
+    "uuid": "^9.0.1"
+  }
+}
